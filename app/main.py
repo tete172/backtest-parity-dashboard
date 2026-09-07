@@ -25,7 +25,7 @@ from .db import get_session, init_db
 
 BASE_DIR = Path(__file__).resolve().parent
 
-app = FastAPI(title="FX Bot 監視ダッシュボード", version=__version__)
+app = FastAPI(title="通貨自動売買ボット 監視ダッシュボード", version=__version__)
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 templates = Jinja2Templates(directory=str(BASE_DIR / "templates"))
 

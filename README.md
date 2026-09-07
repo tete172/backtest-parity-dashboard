@@ -1,4 +1,4 @@
-# FX 自動売買ボット バックテスト整合性ダッシュボード
+# 通貨自動売買ボット バックテスト整合性ダッシュボード
 
 > **公開ポートフォリオです。** 戦略パラメータ・バックテスト実績値は
 > `app/baseline.py` / `backtest/strategies.py` / `backtest/exits.py` とも
@@ -7,7 +7,7 @@
 
 ## 目的
 
-FX で **4 戦略統合の自動売買ボット(別管理)を EC2 上で数ヶ月以上稼働** させている。
+通貨の自動売買で、**4 戦略統合のボット(別管理)を EC2 上で数ヶ月以上稼働** させている。
 その運用で、**資産推移だけを見ていては気づけない乖離**を事後で発見した:
 
 - シグナルの過半数が証拠金不足で**失注**していた(バックテストは全シグナル約定前提)
@@ -79,7 +79,7 @@ KPI などの数値は**合成データ**で、画面上部に「デモデータ
 ```mermaid
 flowchart LR
     YF["Yahoo Finance<br/>1時間足 (yfinance)<br/>period=60d"]
-    GMO["GMO コイン FX API<br/>ticker / 発注 / 建玉"]
+    GMO["GMO コイン API<br/>ticker / 発注 / 建玉"]
 
     subgraph EC2bot["EC2 t3.micro (ap-northeast-1) + Elastic IP"]
       SYS["systemd: fxbot.service<br/>Restart=always"] --> BOT["監視対象ボット<br/>4 戦略統合 / hourly"]
