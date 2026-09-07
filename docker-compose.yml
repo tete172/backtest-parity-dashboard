@@ -1,0 +1,44 @@
+# ローカルで本番相当(PostgreSQL=RDS / Redis=ElastiCache)を再現する構成。
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: fxbot
+      POSTGRES_PASSWORD: fxbot
+      POSTGRES_DB: fxbot
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fxbot"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  web:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql+psycopg2://fxbot:fxbot@db:5432/fxbot
+      REDIS_URL: redis://redis:6379/0
+      # CloudWatch を試すなら AWS 認証情報をここに渡す(無くても他機能は動く)
+      # AWS_ACCESS_KEY_ID: ...
+      # AWS_SECRET_ACCESS_KEY: ...
+      AWS_REGION: ap-northeast-1
+    ports:
+      - "8000:8000"
+    # 初回はデモデータを流し込んでから起動
+    command: >
+      sh -c "python -m scripts.seed_demo_data &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000"
+
+volumes:
+  pgdata:

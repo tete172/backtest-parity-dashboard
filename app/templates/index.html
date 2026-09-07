@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FX Bot 監視ダッシュボード</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.7/chart.umd.min.js"
+    defer
+  ></script>
+  <script src="/static/dashboard.js" defer></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="dot" id="botDot"></span>
+      FX 自動売買ボット 監視ダッシュボード
+    </div>
+    <div class="meta">
+      <span id="botStatus">読み込み中…</span>
+      <span class="sep">|</span>
+      <span>EC2: {{ instance_id }} ({{ region }})</span>
+      <span class="sep">|</span>
+      <span>cache: <b id="cacheBackend">-</b></span>
+      <span class="sep">|</span>
+      <span>v{{ version }}</span>
+      <button id="refreshBtn" title="再取得">↻</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="demoBanner" class="demo-banner" hidden>
+      ⚠ <b>デモデータ(合成)を表示中</b> — 実際の運用実績ではありません。
+      数値はダッシュボードの動作確認用に自動生成したものです。
+      <span id="demoBannerMode"></span>
+    </div>
+
+    <p class="purpose">
+      <b>目的:</b> 資産推移を眺めるためではなく、実運用が
+      <b>バックテスト(4戦略統合)の前提どおりに取引できているか</b>を検証するダッシュボード。
+      証拠金不足による失注・二重発注・同時建玉数の上限・手法別シグナル比率のドリフトを常時突き合わせる。
+    </p>
+
+    <!-- バックテスト整合性チェック(主機能) -->
+    <section class="panel recon" id="reconPanel">
+      <div class="recon-head">
+        <h2>バックテスト整合性チェック</h2>
+        <span class="verdict" id="reconVerdict">-</span>
+      </div>
+      <div id="reconChecks"></div>
+      <details class="baseline">
+        <summary>バックテストの前提(baseline)</summary>
+        <pre id="reconBaseline"></pre>
+      </details>
+    </section>
+
+    <!-- バックテスト再現(シグナル単位) -->
+    <section class="panel recon" id="parityPanel">
+      <div class="recon-head">
+        <h2>バックテスト再現 ①シグナル単位(entry)</h2>
+        <span class="verdict" id="parityRate">-</span>
+      </div>
+      <p class="hint" id="parityMeta"></p>
+      <div class="kpi-grid" id="parityCounts"></div>
+      <table class="data" id="parityByStrategy"></table>
+      <details class="baseline">
+        <summary>不一致の例(MISSING / EXTRA / MISMATCH)</summary>
+        <pre id="paritySamples"></pre>
+      </details>
+    </section>
+
+    <!-- バックテスト再現(トレード・損益単位) -->
+    <section class="panel recon" id="tradeParityPanel">
+      <div class="recon-head">
+        <h2>バックテスト再現 ②トレード・損益単位(exit まで再現)</h2>
+        <span class="verdict" id="tradeParityRate">-</span>
+      </div>
+      <p class="hint" id="tradeParityMeta"></p>
+      <div class="kpi-grid" id="tradeParityCounts"></div>
+      <table class="data" id="tradeParityByStrategy"></table>
+      <details class="baseline">
+        <summary>取り逃し / 想定外 / 勝敗不一致の例</summary>
+        <pre id="tradeParitySamples"></pre>
+      </details>
+    </section>
+
+    <!-- KPI -->
+    <section class="kpi-grid" id="kpiGrid"></section>
+
+    <!-- チャート -->
+    <section class="panel">
+      <h2>エクイティカーブ(日次)</h2>
+      <canvas id="equityChart" height="90"></canvas>
+    </section>
+
+    <section class="panel">
+      <h2>日次損益</h2>
+      <canvas id="dailyPnlChart" height="80"></canvas>
+    </section>
+
+    <div class="row">
+      <section class="panel">
+        <h2>シグナル実行率</h2>
+        <p class="hint">
+          検出したシグナルのうち、実際に発注できた割合。証拠金不足による失注を可視化する。
+        </p>
+        <canvas id="signalChart" height="120"></canvas>
+        <div id="signalNote" class="note"></div>
+      </section>
+
+      <section class="panel">
+        <h2>CloudWatch アラーム</h2>
+        <p class="hint">監視ボットの EC2(物理ホスト障害 → ec2:recover 自動復旧)。</p>
+        <div id="cloudwatch" class="cw-list"></div>
+      </section>
+    </div>
+
+    <div class="row">
+      <section class="panel">
+        <h2>手法別成績</h2>
+        <table id="strategyTable" class="data"></table>
+      </section>
+      <section class="panel">
+        <h2>通貨ペア別成績</h2>
+        <p class="hint">★ = バックテストで BE マイナス寄りの要監視ペア。</p>
+        <table id="pairTable" class="data"></table>
+      </section>
+    </div>
+
+    <section class="panel">
+      <h2>オープンポジション</h2>
+      <table id="openTable" class="data"></table>
+    </section>
+
+    <section class="panel">
+      <h2>直近イベント</h2>
+      <table id="eventsTable" class="data"></table>
+    </section>
+  </main>
+
+  <footer>
+    <span id="generatedAt"></span> ・ ポートフォリオ用(実運用中の GMO コイン FX ボットの監視基盤)
+  </footer>
+</body>
+</html>

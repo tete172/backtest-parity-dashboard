@@ -1,0 +1,21 @@
+2026-09-01 09:01:03 INFO  [cycle]   メインチェック開始 cycle=20260901-0901 pairs=12
+2026-09-01 09:01:04 INFO  [account] 有効証拠金=302923 残高=310450 必要証拠金=41200 証拠金維持率=735.2 建玉数=2
+2026-09-01 09:01:06 INFO  [signal]  pair=USD_JPY strategy=SB side=LONG action=ENTRY risk_pct=0.02 detail=entry_signal
+2026-09-01 09:01:08 INFO  [order]   pair=USD_JPY strategy=SB side=LONG result=EXECUTED positionId=1000001 price=147.512 lot=8000
+2026-09-01 09:01:09 INFO  [signal]  pair=GBP_USD strategy=MACD side=SHORT action=ENTRY risk_pct=0.01 detail=entry_signal
+2026-09-01 09:01:10 WARN  [order]   pair=GBP_USD strategy=MACD side=SHORT result=MARGIN_INSUFFICIENT detail="Trading margin is insufficient"
+2026-09-01 09:01:11 INFO  [signal]  pair=GBP_USD strategy=MACD side=SHORT action=ENTRY risk_pct=0.01 detail=entry_signal
+2026-09-01 09:01:12 INFO  [order]   pair=GBP_USD strategy=MACD side=SHORT result=EXECUTED positionId=1000002 price=1.34210 lot=6000
+2026-09-01 10:01:02 INFO  [cycle]   メインチェック開始 cycle=20260901-1001 pairs=12
+2026-09-01 10:01:03 INFO  [account] 有効証拠金=301880 残高=310450 必要証拠金=62400 証拠金維持率=483.8 建玉数=3
+2026-09-01 10:01:05 INFO  [signal]  pair=AUD_JPY strategy=DM_PSAR side=LONG action=ENTRY risk_pct=0.01 detail=entry_signal
+2026-09-01 10:01:06 WARN  [order]   pair=AUD_JPY strategy=DM_PSAR side=LONG result=MARGIN_INSUFFICIENT detail="Trading margin is insufficient"
+2026-09-01 12:33:19 INFO  [cycle]   メインチェック開始 cycle=20260901-1233 pairs=12
+2026-09-01 12:33:20 INFO  [account] 有効証拠金=307075 残高=314602 必要証拠金=41200 証拠金維持率=745.3 建玉数=2
+2026-09-01 12:33:22 INFO  [exit]    pair=USD_JPY strategy=SB side=LONG result=CLOSED positionId=1000001 price=148.031 pnl_jpy=4152 reason=TP
+2026-09-02 03:15:04 INFO  [cycle]   メインチェック開始 cycle=20260902-0315 pairs=12
+2026-09-02 03:15:05 INFO  [account] 有効証拠金=305090 残高=312855 必要証拠金=20600 証拠金維持率=1481.0 建玉数=1
+2026-09-02 03:15:07 INFO  [exit]    pair=GBP_USD strategy=MACD side=SHORT result=CLOSED positionId=1000002 price=1.35015 pnl_jpy=-1747 reason=SL
+2026-09-02 09:01:01 INFO  [cycle]   メインチェック開始 cycle=20260902-0901 pairs=12
+2026-09-02 09:01:02 INFO  [account] 有効証拠金=304980 残高=311108 必要証拠金=0 証拠金維持率=0.0 建玉数=0
+2026-09-02 09:01:04 DEBUG [misc]    シグナルなし(全ペア条件未成立)

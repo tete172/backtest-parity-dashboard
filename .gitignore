@@ -1,0 +1,27 @@
+# 認証情報・環境変数
+.env
+*.pem
+*.ppk
+
+# ローカル DB / 取り込み状態
+*.db
+.ingest_state.json
+
+# 大きな OHLC データ(バックテスト検証用チャート)はコミットしない。
+# backtest/sample_ohlc.csv(小さな実データスライス)だけは追跡する。
+/fx_cache/
+backtest/data/
+!backtest/sample_ohlc.csv
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+
+# エディタ
+.vscode/
+.idea/
+.DS_Store

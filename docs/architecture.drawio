@@ -1,0 +1,307 @@
+<mxfile host="app.diagrams.net" agent="fxbot_dashboard" version="24.7.17">
+  <diagram id="asis" name="現行構成 (As-Is)">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="826" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title1" value="FX 自動売買ボット — 現行構成 (As-Is) / 監視対象そのもの" style="text;html=1;align=left;verticalAlign=middle;fontSize=16;fontStyle=1;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="40" y="24" width="700" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="yf" value="Yahoo Finance&#10;1時間足 (yfinance)&#10;period=60d&#10;→ シグナル判定用チャート" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EEF6FF;strokeColor=#4C9FFE;fontColor=#232F3E;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="230" width="190" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="gmo" value="GMO コイン FX API&#10;ticker / 発注 / 建玉&#10;(約定価格はここ)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontColor=#232F3E;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="340" width="190" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cloud1" value="AWS Cloud" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=12;fontStyle=0;container=0;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_aws_cloud_alt;strokeColor=#232F3E;fillColor=none;verticalAlign=top;align=left;spacingLeft=30;fontColor=#232F3E;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="300" y="80" width="820" height="600" as="geometry" />
+        </mxCell>
+
+        <mxCell id="region1" value="リージョン: ap-northeast-1" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=12;fontStyle=0;container=0;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_region;strokeColor=#00A4A6;fillColor=none;verticalAlign=top;align=left;spacingLeft=30;fontColor=#147EBA;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="340" y="120" width="740" height="520" as="geometry" />
+        </mxCell>
+
+        <mxCell id="vpc1" value="VPC" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=12;fontStyle=0;container=0;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_vpc;strokeColor=#248814;fillColor=none;verticalAlign=top;align=left;spacingLeft=30;fontColor=#248814;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="380" y="300" width="420" height="300" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ec2bot" value="fxbot EC2 (t3.micro)&#10;systemd: fxbot.service (Restart=always)&#10;NewAPI_fxtrade_4.py / hourly" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#ED7100;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=11;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.ec2;" vertex="1" parent="1">
+          <mxGeometry x="440" y="360" width="78" height="78" as="geometry" />
+        </mxCell>
+
+        <mxCell id="eip" value="Elastic IP&#10;(固定)" style="text;html=1;align=center;verticalAlign=middle;fontSize=11;fontColor=#146EB4;fontStyle=2;" vertex="1" parent="1">
+          <mxGeometry x="530" y="360" width="90" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="log1" value="fxbot.log&#10;(自前ロガー)" style="shape=mxgraph.aws4.file;html=1;whiteSpace=wrap;fillColor=#E8F5E9;strokeColor=#248814;fontSize=11;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="430" y="490" width="120" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cw1" value="CloudWatch Alarm&#10;StatusCheckFailed_System" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#E7157B;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=11;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.cloudwatch;" vertex="1" parent="1">
+          <mxGeometry x="880" y="220" width="78" height="78" as="geometry" />
+        </mxCell>
+
+        <mxCell id="sns1" value="SNS → メール通知" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#E7157B;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=11;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.simple_notification_service;" vertex="1" parent="1">
+          <mxGeometry x="880" y="420" width="78" height="78" as="geometry" />
+        </mxCell>
+
+        <mxCell id="note1" value="価格フィードが3系統:&#10;・シグナル判定 = Yahoo Finance 1時間足(yfinance, period=60d)&#10;・約定価格 = GMO ticker  ・バックテスト = HistData.com(fx_cache/)&#10;　→ トレード単位の parity 照合はこの3者の差ぶんがノイズになる(docs/PARITY.md)&#10;&#10;単一構成(冗長化なし)は意図的な判断:&#10;・1 台停止 ≒ 最悪 1 サイクル(1 時間)のシグナル欠損に留まる&#10;・Elastic IP + systemd(Restart=always) + CloudWatch ec2:recover で数分〜十数分で自動復帰&#10;・よって ALB / 多重化のコストは割に合わないと判断した&#10;・2026-08 に物理ホスト障害 → AWS CLI で stop→start しホスト移設して復旧、以後この自動復旧を追加" style="text;html=1;align=left;verticalAlign=top;fontSize=11;fontColor=#232F3E;fillColor=#FFF8E1;strokeColor=#E7157B;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="340" y="600" width="740" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e1" value="約定価格 / 発注 / 建玉照会" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classicThin;startArrow=classicThin;strokeColor=#666666;fontSize=10;fontColor=#666666;" edge="1" parent="1" source="ec2bot" target="gmo">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e0yf" value="1時間足チャート(シグナル判定)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#4C9FFE;fontSize=10;fontColor=#4C9FFE;" edge="1" parent="1" source="yf" target="ec2bot">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e2" value="ステータスメトリクス" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#E7157B;fontSize=10;fontColor=#232F3E;" edge="1" parent="1" source="ec2bot" target="cw1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e3" value="ec2:recover (自動復旧)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;dashed=1;strokeColor=#E7157B;fontSize=10;fontColor=#232F3E;" edge="1" parent="1" source="cw1" target="ec2bot">
+          <mxGeometry relative="1" as="geometry" />
+          <Array as="points">
+            <mxPoint x="700" y="180" />
+          </Array>
+        </mxCell>
+
+        <mxCell id="e4" value="通知" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#E7157B;fontSize=10;fontColor=#232F3E;" edge="1" parent="1" source="cw1" target="sns1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="e5" value="出力" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#248814;fontSize=10;fontColor=#232F3E;" edge="1" parent="1" source="ec2bot" target="log1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <diagram id="tobe" name="ダッシュボード導入後 (To-Be)">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1169" pageHeight="826" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="title2" value="FX 監視ダッシュボード — ダッシュボード導入後 (To-Be) / このリポジトリ" style="text;html=1;align=left;verticalAlign=middle;fontSize=16;fontStyle=1;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="40" y="24" width="800" height="30" as="geometry" />
+        </mxCell>
+
+        <mxCell id="browser" value="ブラウザ&#10;(運用者)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontColor=#232F3E;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="40" y="120" width="140" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cloud2" value="AWS Cloud (ap-northeast-1)" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=12;fontStyle=0;container=0;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_aws_cloud_alt;strokeColor=#232F3E;fillColor=none;verticalAlign=top;align=left;spacingLeft=30;fontColor=#232F3E;dashed=0;" vertex="1" parent="1">
+          <mxGeometry x="260" y="70" width="880" height="680" as="geometry" />
+        </mxCell>
+
+        <mxCell id="asg" value="Auto Scaling group" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;gradientColor=none;html=1;whiteSpace=wrap;fontSize=12;fontStyle=0;container=0;pointerEvents=0;collapsible=0;recursiveResize=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_auto_scaling_group;strokeColor=#ED7100;fillColor=none;verticalAlign=top;align=left;spacingLeft=30;fontColor=#ED7100;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="470" y="250" width="330" height="170" as="geometry" />
+        </mxCell>
+
+        <mxCell id="r53" value="Route 53" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#8C4FFF;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=11;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.route_53;" vertex="1" parent="1">
+          <mxGeometry x="300" y="110" width="78" height="78" as="geometry" />
+        </mxCell>
+
+        <mxCell id="acm" value="ACM 証明書&#10;(HTTPS)" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#DD344C;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=11;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.certificate_manager;" vertex="1" parent="1">
+          <mxGeometry x="300" y="250" width="78" height="78" as="geometry" />
+        </mxCell>
+
+        <mxCell id="alb" value="ALB&#10;(HTTPS / ヘルスチェック /healthz)" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#8C4FFF;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=11;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.application_load_balancer;" vertex="1" parent="1">
+          <mxGeometry x="500" y="120" width="78" height="78" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ec2a" value="FastAPI (uvicorn)" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#ED7100;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=11;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.ec2;" vertex="1" parent="1">
+          <mxGeometry x="500" y="300" width="78" height="78" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ec2b" value="FastAPI (uvicorn)" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#ED7100;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=11;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.ec2;" vertex="1" parent="1">
+          <mxGeometry x="660" y="300" width="78" height="78" as="geometry" />
+        </mxCell>
+
+        <mxCell id="rds" value="RDS for PostgreSQL&#10;trades / signal_events /&#10;equity_snapshots / heartbeats" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#C925D1;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=11;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.rds;" vertex="1" parent="1">
+          <mxGeometry x="480" y="500" width="78" height="78" as="geometry" />
+        </mxCell>
+
+        <mxCell id="redis" value="ElastiCache for Redis&#10;(集計結果 TTL キャッシュ・任意)" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#C925D1;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=11;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.elasticache;" vertex="1" parent="1">
+          <mxGeometry x="660" y="500" width="78" height="78" as="geometry" />
+        </mxCell>
+
+        <mxCell id="cw2" value="CloudWatch Alarms&#10;(describe_alarms)" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#E7157B;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=11;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.cloudwatch;" vertex="1" parent="1">
+          <mxGeometry x="900" y="300" width="78" height="78" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ec2mon" value="fxbot EC2&#10;(監視対象・As-Is 図)" style="sketch=0;outlineConnect=0;fontColor=#232F3E;gradientColor=none;fillColor=#ED7100;strokeColor=none;dashed=0;verticalLabelPosition=bottom;verticalAlign=top;align=center;html=1;fontSize=11;fontStyle=0;aspect=fixed;shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.ec2;" vertex="1" parent="1">
+          <mxGeometry x="900" y="500" width="78" height="78" as="geometry" />
+        </mxCell>
+
+        <mxCell id="log2" value="fxbot.log" style="shape=mxgraph.aws4.file;html=1;whiteSpace=wrap;fillColor=#E8F5E9;strokeColor=#248814;fontSize=11;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="900" y="620" width="90" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ingest" value="ingest ワーカー&#10;(log パーサ / バイトオフセット管理 / 冪等)&#10;systemd タイマー or EventBridge" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#ED7100;fontColor=#232F3E;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="640" y="620" width="230" height="70" as="geometry" />
+        </mxCell>
+
+        <mxCell id="f1" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#666666;fontSize=10;" edge="1" parent="1" source="browser" target="r53">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f2" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#8C4FFF;" edge="1" parent="1" source="r53" target="alb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f3" value="証明書" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=none;dashed=1;strokeColor=#DD344C;fontSize=10;" edge="1" parent="1" source="acm" target="alb">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f4" value="/healthz でルーティング" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#8C4FFF;fontSize=10;" edge="1" parent="1" source="alb" target="ec2a">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f5" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#C925D1;" edge="1" parent="1" source="ec2a" target="rds">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#C925D1;" edge="1" parent="1" source="ec2b" target="redis">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f7" value="describe_alarms" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#E7157B;fontSize=10;" edge="1" parent="1" source="ec2b" target="cw2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f8" value="tail" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#248814;fontSize=10;" edge="1" parent="1" source="log2" target="ingest">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f9" value="INSERT" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#C925D1;fontSize=10;" edge="1" parent="1" source="ingest" target="rds">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="f10" style="edgeStyle=orthogonalEdgeStyle;rounded=0;html=1;endArrow=classic;strokeColor=#248814;" edge="1" parent="1" source="ec2mon" target="log2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <mxCell id="note2" value="ALB + Auto Scaling + ElastiCache はボット 1 台の監視には過剰(意図的なオーバースペック)。&#10;実務で必要になる設計パターン(冗長化・水平スケール・キャッシュ戦略・ヘルスチェック設計・IaC 化)を&#10;稼働中のシステムを題材に一通り手を動かして学ぶことが目的。検証後は不要リソースを削除し単一構成に戻す前提。" style="text;html=1;align=left;verticalAlign=top;fontSize=11;fontColor=#232F3E;fillColor=#FFF8E1;strokeColor=#ED7100;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="280" y="690" width="860" height="55" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+
+  <diagram id="ingest" name="ログ取り込みトポロジ (本番)">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1300" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <mxCell id="t3" value="fxbot.log をダッシュボードに取り込む本番構成(手動 SCP はローカル初回のパーサ確認だけ)" style="text;html=1;align=left;verticalAlign=middle;fontSize=15;fontStyle=1;fontColor=#232F3E;" vertex="1" parent="1">
+          <mxGeometry x="30" y="16" width="1000" height="28" as="geometry" />
+        </mxCell>
+
+        <!-- ================= A ================= -->
+        <mxCell id="laneA" value="A. ダッシュボードをボット EC2 に同居(推奨・最小。ログ転送なし)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F1F8E9;strokeColor=#7AA116;fontColor=#232F3E;fontSize=12;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="56" width="1240" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="a_ec2" value="EC2(ボット + ダッシュボード 同居)" style="points=[[0,0],[0.25,0],[0.5,0],[0.75,0],[1,0],[1,0.25],[1,0.5],[1,0.75],[1,1],[0.75,1],[0.5,1],[0.25,1],[0,1],[0,0.75],[0,0.5],[0,0.25]];outlineConnect=0;html=1;whiteSpace=wrap;fontSize=11;container=0;pointerEvents=0;collapsible=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_ec2_instance_contents;strokeColor=#ED7100;fillColor=none;verticalAlign=top;align=left;spacingLeft=28;fontColor=#ED7100;" vertex="1" parent="1">
+          <mxGeometry x="60" y="96" width="740" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="a_bot" value="売買ボット(systemd)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#ED7100;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="90" y="140" width="130" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="a_log" value="fxbot.log" style="shape=mxgraph.aws4.file;html=1;whiteSpace=wrap;fillColor=#E8F5E9;strokeColor=#248814;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="260" y="140" width="90" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="a_ing" value="ingest --follow&#10;(systemd / 60s 間隔・冪等)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#ED7100;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="400" y="136" width="170" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="a_db" value="SQLite / PostgreSQL&#10;(同 EC2)" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.rds;html=1;fillColor=#C925D1;strokeColor=none;fontColor=#232F3E;fontSize=10;verticalLabelPosition=bottom;verticalAlign=top;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="620" y="120" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a_api" value="FastAPI (uvicorn, systemd)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#ED7100;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="90" y="200" width="200" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="a_usr" value="ブラウザ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="150" width="110" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="a_eip" value="Elastic IP / ALB" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EDE7F6;strokeColor=#8C4FFF;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="900" y="150" width="150" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="ea1" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;strokeColor=#248814;" edge="1" parent="1" source="a_bot" target="a_log"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ea2" value="tail" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;strokeColor=#248814;fontSize=9;" edge="1" parent="1" source="a_log" target="a_ing"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ea3" value="INSERT" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;strokeColor=#C925D1;fontSize=9;" edge="1" parent="1" source="a_ing" target="a_db"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ea4" value="SELECT" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;strokeColor=#C925D1;fontSize=9;" edge="1" parent="1" source="a_api" target="a_db"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ea5" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;strokeColor=#8C4FFF;" edge="1" parent="1" source="a_eip" target="a_api"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ea6" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;strokeColor=#666666;fontSize=9;" edge="1" parent="1" source="a_usr" target="a_eip"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ================= B ================= -->
+        <mxCell id="laneB" value="B. ボット EC2 の ingest が RDS に直接書く(冗長化フル構成。ログは EC2 から出ない)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#E8EAF6;strokeColor=#3F51B5;fontColor=#232F3E;fontSize=12;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="296" width="1240" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="b_ec2" value="EC2(ボット)" style="outlineConnect=0;html=1;whiteSpace=wrap;fontSize=11;container=0;pointerEvents=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_ec2_instance_contents;strokeColor=#ED7100;fillColor=none;verticalAlign=top;align=left;spacingLeft=28;fontColor=#ED7100;" vertex="1" parent="1">
+          <mxGeometry x="60" y="336" width="470" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="b_bot" value="売買ボット" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#ED7100;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="90" y="386" width="110" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="b_log" value="fxbot.log" style="shape=mxgraph.aws4.file;html=1;whiteSpace=wrap;fillColor=#E8F5E9;strokeColor=#248814;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="230" y="386" width="80" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="b_ing" value="ingest --follow&#10;(systemd)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#ED7100;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="350" y="382" width="150" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="b_rds" value="RDS for PostgreSQL&#10;(別)" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.rds;html=1;fillColor=#C925D1;strokeColor=none;fontColor=#232F3E;fontSize=10;verticalLabelPosition=bottom;verticalAlign=top;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="640" y="380" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="b_api" value="FastAPI&#10;EC2×2 / ASG + ALB" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.application_load_balancer;html=1;fillColor=#8C4FFF;strokeColor=none;fontColor=#232F3E;fontSize=10;verticalLabelPosition=bottom;verticalAlign=top;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="860" y="380" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="b_usr" value="ブラウザ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="388" width="110" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="eb1" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;strokeColor=#248814;" edge="1" parent="1" source="b_bot" target="b_log"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eb2" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;strokeColor=#248814;" edge="1" parent="1" source="b_log" target="b_ing"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eb3" value="行だけ DB 接続で流す(ログ本体は転送しない)" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;strokeColor=#C925D1;fontSize=9;fontColor=#C925D1;" edge="1" parent="1" source="b_ing" target="b_rds"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eb4" value="SELECT" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;strokeColor=#C925D1;fontSize=9;" edge="1" parent="1" source="b_api" target="b_rds"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="eb5" value="HTTPS" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;strokeColor=#666666;fontSize=9;" edge="1" parent="1" source="b_usr" target="b_api"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <!-- ================= C ================= -->
+        <mxCell id="laneC" value="C. S3 / CloudWatch Logs 経由(フリート向け。ingest に読み込み小改修が必要)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FCE4EC;strokeColor=#E7157B;fontColor=#232F3E;fontSize=12;verticalAlign=top;align=left;spacingLeft=10;spacingTop=6;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="546" width="1240" height="230" as="geometry" />
+        </mxCell>
+        <mxCell id="c_ec2" value="EC2(ボット)" style="outlineConnect=0;html=1;whiteSpace=wrap;fontSize=11;container=0;pointerEvents=0;shape=mxgraph.aws4.group;grIcon=mxgraph.aws4.group_ec2_instance_contents;strokeColor=#ED7100;fillColor=none;verticalAlign=top;align=left;spacingLeft=28;fontColor=#ED7100;" vertex="1" parent="1">
+          <mxGeometry x="60" y="586" width="470" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="c_bot" value="売買ボット" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#ED7100;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="90" y="636" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="c_log" value="fxbot.log" style="shape=mxgraph.aws4.file;html=1;whiteSpace=wrap;fillColor=#E8F5E9;strokeColor=#248814;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="215" y="636" width="75" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="c_ship" value="aws s3 sync (cron)&#10;/ CloudWatch Logs agent" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#ED7100;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="320" y="632" width="180" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="c_s3" value="S3 / CloudWatch Logs" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.s3;html=1;fillColor=#7AA116;strokeColor=none;fontColor=#232F3E;fontSize=10;verticalLabelPosition=bottom;verticalAlign=top;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="620" y="628" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="c_ing" value="ingest(別サーバー / Lambda)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3E0;strokeColor=#ED7100;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="770" y="636" width="180" height="44" as="geometry" />
+        </mxCell>
+        <mxCell id="c_db" value="RDS" style="shape=mxgraph.aws4.resourceIcon;resIcon=mxgraph.aws4.rds;html=1;fillColor=#C925D1;strokeColor=none;fontColor=#232F3E;fontSize=10;verticalLabelPosition=bottom;verticalAlign=top;aspect=fixed;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="626" width="60" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="c_api" value="FastAPI → ブラウザ" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F5F5F5;strokeColor=#666666;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="700" width="130" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="ec1" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;strokeColor=#248814;" edge="1" parent="1" source="c_bot" target="c_log"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ec2e" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;strokeColor=#248814;" edge="1" parent="1" source="c_log" target="c_ship"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ec3" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;strokeColor=#7AA116;" edge="1" parent="1" source="c_ship" target="c_s3"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ec4" value="pull" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;strokeColor=#7AA116;fontSize=9;" edge="1" parent="1" source="c_s3" target="c_ing"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ec5" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;strokeColor=#C925D1;" edge="1" parent="1" source="c_ing" target="c_db"><mxGeometry relative="1" as="geometry" /></mxCell>
+        <mxCell id="ec6" style="edgeStyle=orthogonalEdgeStyle;html=1;endArrow=classic;strokeColor=#C925D1;" edge="1" parent="1" source="c_db" target="c_api"><mxGeometry relative="1" as="geometry" /></mxCell>
+
+        <mxCell id="note3" value="共通: 取り込みはバイトオフセットを .ingest_state.json に記録するため何度流しても重複しない(冪等)。&#10;初回だけローカルへ手動 SCP して parser の正規表現が実ログ書式に合うか確認する。以降は上記いずれかで自動化。" style="text;html=1;align=left;verticalAlign=top;fontSize=11;fontColor=#232F3E;fillColor=#FFF8E1;strokeColor=#F0B429;spacing=8;" vertex="1" parent="1">
+          <mxGeometry x="30" y="792" width="1240" height="60" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

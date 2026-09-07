@@ -1,0 +1,5 @@
+-r requirements.txt
+pytest==8.3.4
+httpx==0.28.1
+# バックテスト再現を「本番ボットと同じ Yahoo Finance フィード」で回すとき用(任意)
+yfinance==0.2.51

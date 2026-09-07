@@ -1,0 +1,283 @@
+<title>FXボット監視基盤 アーキテクチャ</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --panel: #ffffff;
+    --panel-2: #eef1f5;
+    --text: #1a2230;
+    --muted: #5b6577;
+    --line: #dde2ea;
+    --accent: #2f6fe4;
+    --good: #1f8a58;
+    --warn: #9a6512;
+    --alarm: #b81e6c;
+    --canvas: #fbfcfe;
+    --shadow: 0 1px 2px rgba(20, 30, 50, .05), 0 8px 24px -12px rgba(20, 30, 50, .12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1420;
+      --panel: #161d2e;
+      --panel-2: #1c2740;
+      --text: #e7ecf5;
+      --muted: #8f9cb6;
+      --line: #29344f;
+      --accent: #6cb0ff;
+      --good: #33c27f;
+      --warn: #f0b429;
+      --alarm: #f2569f;
+      --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 30px -14px rgba(0, 0, 0, .55);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1420;
+    --panel: #161d2e;
+    --panel-2: #1c2740;
+    --text: #e7ecf5;
+    --muted: #8f9cb6;
+    --line: #29344f;
+    --accent: #6cb0ff;
+    --good: #33c27f;
+    --warn: #f0b429;
+    --alarm: #f2569f;
+    --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 30px -14px rgba(0, 0, 0, .55);
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: "IBM Plex Sans", system-ui, -apple-system, "Hiragino Kaku Gothic ProN", Meiryo, sans-serif;
+    font-size: 15px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1000px; margin: 0 auto; padding: 40px 22px 64px; }
+
+  header { border-bottom: 1px solid var(--line); padding-bottom: 22px; margin-bottom: 8px; }
+  .kicker {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--accent); margin: 0 0 10px;
+  }
+  h1 {
+    font-weight: 700; font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.05rem);
+    line-height: 1.2; margin: 0 0 8px; text-wrap: balance; letter-spacing: -.01em;
+  }
+  .lead { color: var(--muted); margin: 0 0 14px; max-width: 62ch; }
+  .source {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 12.5px; color: var(--muted); margin: 0;
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+    padding: 9px 12px; display: inline-block;
+  }
+  .source b { color: var(--text); font-weight: 500; }
+
+  section { margin-top: 40px; }
+  .eyebrow {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11.5px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 4px;
+  }
+  h2 {
+    font-weight: 600; font-size: 1.28rem; margin: 0 0 4px; letter-spacing: -.005em;
+    text-wrap: balance;
+  }
+  .whatfor { color: var(--muted); margin: 0 0 18px; font-size: 14px; max-width: 64ch; }
+
+  .diagram {
+    background: var(--canvas);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px 18px;
+    overflow-x: auto;
+    box-shadow: var(--shadow);
+  }
+  .diagram + .diagram { margin-top: 14px; }
+  .diagram .mermaid { min-width: 520px; margin: 0; text-align: center; }
+  .diagram .mermaid svg { max-width: 100%; height: auto; }
+
+  .cap {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: 11.5px; letter-spacing: .1em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 10px;
+  }
+  .cap.good { color: var(--good); }
+  .cap.warn { color: var(--warn); }
+
+  ul.notes { margin: 16px 0 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+  ul.notes li {
+    position: relative; padding-left: 20px; font-size: 14px; color: var(--text);
+  }
+  ul.notes li::before {
+    content: ""; position: absolute; left: 4px; top: .62em;
+    width: 6px; height: 6px; border-radius: 50%; background: var(--accent);
+  }
+  ul.notes li b { font-weight: 600; }
+  code {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    font-size: .88em; background: var(--panel-2); border: 1px solid var(--line);
+    border-radius: 5px; padding: 1px 5px;
+  }
+
+  .callout {
+    margin-top: 18px; border-left: 3px solid var(--warn);
+    background: color-mix(in srgb, var(--warn) 8%, var(--panel));
+    border-radius: 0 8px 8px 0; padding: 12px 16px; font-size: 13.5px; color: var(--text);
+  }
+
+  footer {
+    margin-top: 52px; padding-top: 20px; border-top: 1px solid var(--line);
+    color: var(--muted); font-size: 12.5px;
+  }
+  a { color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 3px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+  }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="kicker">Architecture</p>
+    <h1>FXボット監視基盤 アーキテクチャ</h1>
+    <p class="lead">
+      FX 自動売買ボット(EC2 常駐)の「バックテスト整合性ダッシュボード」の構成図。
+      現状 → ダッシュボード導入後 → 本番運用でのログ取り込みトポロジ、の 3 枚。
+    </p>
+    <p class="source">
+      編集可能な原本: <b>docs/architecture.drawio</b>(draw.io / VS Code 拡張で開く・3 ページ構成)
+    </p>
+  </header>
+
+  <section>
+    <p class="eyebrow">現状 / As-Is</p>
+    <h2>現行構成 — 監視対象そのもの</h2>
+    <p class="whatfor">
+      このダッシュボードが監視する、実際に数ヶ月以上稼働しているボットの構成。
+      価格フィードは <b>3 系統</b>(シグナル判定 = Yahoo Finance、約定 = 取引所 API、バックテスト = ヒストリカルデータ)。
+    </p>
+    <div class="diagram">
+      <p class="cap">単一構成(冗長化なし)は意図的</p>
+      <pre class="mermaid">
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"IBM Plex Sans, system-ui, sans-serif","primaryColor":"#e9f1fc","primaryBorderColor":"#3f7fd6","primaryTextColor":"#15202e","lineColor":"#7c8aa3","clusterBkg":"#f3f6fa","clusterBorder":"#c9d2df","edgeLabelBackground":"#ffffff","tertiaryColor":"#f3f6fa"},"flowchart":{"htmlLabels":true,"curve":"basis"}}}%%
+flowchart LR
+  YF["Yahoo Finance 1h<br/>yfinance / period=60d"]
+  GMO["取引所 API<br/>ticker / 発注 / 建玉"]
+  subgraph EC2["EC2 t3.micro + Elastic IP"]
+    SYS["systemd<br/>Restart=always"] --> BOT["売買ボット<br/>4戦略統合 / 1時間ごと"]
+    BOT --> LOG["fxbot.log"]
+  end
+  YF -->|"シグナル判定チャート"| BOT
+  BOT -->|"発注 / 建玉照会"| GMO
+  GMO -->|"約定価格"| BOT
+  EC2 -->|"ステータス"| CW["CloudWatch Alarm<br/>StatusCheckFailed_System"]
+  CW -->|"ec2:recover"| EC2
+  CW -->|"通知"| SNS["SNS → メール"]
+      </pre>
+    </div>
+    <ul class="notes">
+      <li><b>単一構成が正しい判断</b>: 1 台停止 ≒ 最悪 1 サイクル(1 時間)のシグナル欠損。<code>Elastic IP + systemd + ec2:recover</code> で数分〜十数分で自動復帰するため、ALB / 多重化のコストは見合わない。</li>
+      <li>物理ホスト障害を実際に経験 → <code>StatusCheckFailed_System</code> → <code>ec2:recover</code> の CloudWatch アラームと systemd 化を後付けで追加。</li>
+      <li>3 フィードの違いがバックテスト照合の残差要因になる(詳細は <code>docs/PARITY.md</code>)。</li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="eyebrow">導入後 / To-Be</p>
+    <h2>ダッシュボード導入後 — このリポジトリのデプロイ先(想定)</h2>
+    <p class="whatfor">
+      ボット本体には手を入れず、既存の <code>fxbot.log</code> を唯一の入力にする疎結合設計。
+      集計は pandas、キャッシュ(Redis)は任意依存、ヘルスチェックは <code>/healthz</code> と <code>/readyz</code> を分離。
+    </p>
+    <div class="diagram">
+      <p class="cap">ログ起点 / ステートレス / 2 AZ 冗長</p>
+      <pre class="mermaid">
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"IBM Plex Sans, system-ui, sans-serif","primaryColor":"#e9f1fc","primaryBorderColor":"#3f7fd6","primaryTextColor":"#15202e","lineColor":"#7c8aa3","clusterBkg":"#f3f6fa","clusterBorder":"#c9d2df","edgeLabelBackground":"#ffffff","tertiaryColor":"#f3f6fa"},"flowchart":{"htmlLabels":true,"curve":"basis"}}}%%
+flowchart LR
+  subgraph BOTEC2["EC2 (売買ボット)"]
+    BOT2["売買ボット"] --> LOG2["fxbot.log"]
+  end
+  LOG2 -->|"tail / 冪等取り込み"| ING["ingest ワーカー"]
+  subgraph AWS["AWS (ダッシュボードのデプロイ先)"]
+    ING --> RDS[("RDS<br/>PostgreSQL")]
+    R53["Route 53"] --> ALB["ALB<br/>HTTPS / ACM"]
+    ALB -->|"/healthz"| ASG["EC2 x2 (Auto Scaling)<br/>FastAPI"]
+    ASG --> RDS
+    ASG --> REDIS[("ElastiCache Redis<br/>TTL キャッシュ / 任意")]
+    ASG -->|"describe_alarms"| CW2["CloudWatch"]
+  end
+  USER["ブラウザ"] --> R53
+      </pre>
+    </div>
+    <ul class="notes">
+      <li><b>ALB + Auto Scaling + ElastiCache は意図的なオーバースペック</b>。実務で必要になる設計パターン(冗長化・水平スケール・キャッシュ戦略・ヘルスチェック設計)を稼働中システムで一通り通すのが目的。検証後は単一構成へ戻す前提。</li>
+      <li><code>/healthz</code>(liveness)を LB チェックに使う。<code>/readyz</code>(DB 到達性)をチェックにすると DB 一時障害で全インスタンスが同時に外れて全断するため。</li>
+      <li>Redis 未設定・接続失敗時はプロセス内 TTL キャッシュに透過フォールバック(必須依存にしない)。</li>
+    </ul>
+  </section>
+
+  <section>
+    <p class="eyebrow">本番運用</p>
+    <h2>ログ取り込みトポロジ — 手動 SCP なしで自動化する</h2>
+    <p class="whatfor">
+      手動 SCP は「ローカル初回に parser の正規表現が実ログ書式と合うか確認する」ためだけ。
+      本番は次の A / B / C いずれかで自動化する。取り込みはバイトオフセットを
+      <code>.ingest_state.json</code> に記録するので、何度流しても重複しない(冪等)。
+    </p>
+
+    <div class="diagram">
+      <p class="cap good">A. ダッシュボードをボット EC2 に同居 — 推奨・転送ゼロ</p>
+      <pre class="mermaid">
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"IBM Plex Sans, system-ui, sans-serif","primaryColor":"#e6f4ec","primaryBorderColor":"#2f9d66","primaryTextColor":"#12241a","lineColor":"#7c8aa3","edgeLabelBackground":"#ffffff"},"flowchart":{"htmlLabels":true,"curve":"basis"}}}%%
+flowchart LR
+  a1["売買ボット + fxbot.log"] --> a2["ingest --follow<br/>systemd / 60秒間隔"]
+  a2 --> a3[("同EC2 DB")]
+  a3 --> a4["FastAPI (同EC2)"]
+  a4 --> a5["ブラウザ<br/>Elastic IP / ALB"]
+      </pre>
+    </div>
+
+    <div class="diagram">
+      <p class="cap">B. ボット EC2 の ingest が RDS へ直接書く — 冗長化フル構成</p>
+      <pre class="mermaid">
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"IBM Plex Sans, system-ui, sans-serif","primaryColor":"#e9f1fc","primaryBorderColor":"#3f7fd6","primaryTextColor":"#15202e","lineColor":"#7c8aa3","edgeLabelBackground":"#ffffff"},"flowchart":{"htmlLabels":true,"curve":"basis"}}}%%
+flowchart LR
+  b1["ボットEC2<br/>ingest --follow"] -->|"行だけ流す(ログ本体は転送しない)"| b2[("RDS")]
+  b2 --> b3["FastAPI<br/>Auto Scaling + ALB"]
+  b3 --> b4["ブラウザ"]
+      </pre>
+    </div>
+
+    <div class="diagram">
+      <p class="cap warn">C. S3 / CloudWatch Logs 経由 — フリート向け・要小改修</p>
+      <pre class="mermaid">
+%%{init: {"theme":"base","themeVariables":{"fontFamily":"IBM Plex Sans, system-ui, sans-serif","primaryColor":"#fbeef4","primaryBorderColor":"#c01a6b","primaryTextColor":"#2a121f","lineColor":"#7c8aa3","edgeLabelBackground":"#ffffff"},"flowchart":{"htmlLabels":true,"curve":"basis"}}}%%
+flowchart LR
+  c1["ボットEC2<br/>aws s3 sync (cron) / Logs agent"] --> c2[("S3 / CloudWatch Logs")]
+  c2 --> c3["ingest<br/>別サーバー / Lambda"]
+  c3 --> c4[("RDS")]
+  c4 --> c5["FastAPI → ブラウザ"]
+      </pre>
+    </div>
+
+    <ul class="notes">
+      <li><b>A</b>: <code>fxbot.log</code> がただのローカルファイルになる。<code>ingest --follow</code> を systemd サービスで回すだけ。転送の仕組みが一切要らない。</li>
+      <li><b>B</b>: <code>DATABASE_URL</code> を RDS に向ける。ログは EC2 から出ず、構造化した行だけが DB 接続で流れる(To-Be 図がこれ)。</li>
+      <li><b>C</b>: <code>ingest</code> に S3 / CloudWatch Logs 読み込みの小改修が必要。多数のボットを 1 つのダッシュボードで見るとき向け。</li>
+    </ul>
+
+    <div class="callout">
+      つなぎ運用なら <b>A</b> が最小コスト。ローカルでの初回 SCP は「parser が実ログ書式に合うか」を確認する 1 回だけと割り切ってよい。
+    </div>
+  </section>
+
+  <footer>
+    FX 自動売買ボット バックテスト整合性ダッシュボード ・ 構成図(mermaid レンダリング版)。
+    原本は <code>docs/architecture.drawio</code>、README にも同内容の mermaid 図あり。
+  </footer>
+</div>
