@@ -243,7 +243,7 @@ IaC(Terraform / CloudFormation)は次段階。現状はアプリ層のみ。
 
 ---
 
-## 運用実績ストーリー(このダッシュボードが必要になった経緯)
+## このダッシュボードが必要になった経緯
 
 - **2026-08**: EC2 の物理ホスト障害で SSH 不通。AWS CLI 側から `stop`→`start` でホスト移設して復旧。
   再発防止に CloudWatch アラーム(`StatusCheckFailed_System` → `ec2:recover`)と systemd 化を実施。
