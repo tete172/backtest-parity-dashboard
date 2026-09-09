@@ -56,7 +56,10 @@
 
 > ⚠️ ログには**決済価格・損益が残らない**(GMO 側の OCO で決済されるため)。
 > このため損益・勝率・エクイティカーブは実データでは埋まらず、KPI タイルは「—」表示になる。
-> 損益まで見るには GMO の約定履歴を別ローダで取り込む必要がある(→ `docs/PARITY.md`)。
+> 損益まで実データにするには GMO の約定履歴を取り込む:
+> `python -m ingest.gmo_history --api`(Private API・直近1ヶ月・要 `GMO_API_KEY` / `GMO_API_SECRET`)
+> または `--csv <約定履歴CSV>`(古い期間。GMO 取引ツールのエクスポート)。
+> `positionId` で `trades` と突合し、CLOSE 約定の `lossGain` を `pnl_jpy` に入れる。
 
 ---
 
@@ -188,11 +191,13 @@ docker compose up --build             # db(Postgres) / redis / web(seed 実行�
 ### 実ログの取り込み
 
 ```bash
-# 1 回だけ
+# fxbot.log の取り込み(1 回 / 追記を監視し続ける)
 python -m ingest.ingest --path /path/to/fxbot.log
-
-# 追記を監視し続ける(30 秒間隔)
 python -m ingest.ingest --path /path/to/fxbot.log --follow
+
+# 決済価格・損益を GMO 約定履歴で補完(fxbot.log には残らないため)
+python -m ingest.gmo_history --api            # Private API(直近1ヶ月・要 .env に GMO キー)
+python -m ingest.gmo_history --csv trades.csv  # 古い期間は取引ツールのエクスポート CSV
 ```
 
 バイトオフセットを `.ingest_state.json` に記録するため、繰り返し実行しても重複取り込みしない。

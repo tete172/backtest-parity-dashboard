@@ -34,6 +34,10 @@ class Settings(BaseSettings):
     fxbot_log_path: str = "./ingest/sample_fxbot.log"
     ingest_state_path: str = "./.ingest_state.json"
 
+    # --- GMO コイン FX API(約定履歴の取り込み用。未設定なら --api は使えない)---
+    gmo_api_key: str = ""
+    gmo_api_secret: str = ""
+
     # --- ボット死活判定(hourly 実行前提)---
     bot_cycle_interval_minutes: int = 60
     bot_stale_after_minutes: int = 150

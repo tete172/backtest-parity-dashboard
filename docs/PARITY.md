@@ -110,6 +110,18 @@ OHLC の CSV は 2 形式に対応(列名の大小・順序は自動判別):
 - ② トレード単位: カバレッジ **~35%**(証拠金不足で大量に見送り)、勝敗一致率 **~70%**、
   平均R sim ~1.0 vs 実 ~0.4(バックテストの取り分の半分も実現できていない、という状態を再現)
 
+## 実ログの決済損益を補う(実装済み: `ingest/gmo_history.py`)
+
+`fxbot.log` は決済(GMO 側 OCO / SL)の価格・損益を記録しないため、KPI・勝率・PF・
+エクイティカーブ・②トレード損益は実ログだけでは埋まらない。GMO の約定履歴で補完する:
+
+- `python -m ingest.gmo_history --api` … GMO Private API `latestExecutions`(直近約1ヶ月)。
+  `GMO_API_KEY` / `GMO_API_SECRET` を `.env` に。署名は監視対象ボットと同じ HMAC-SHA256、依存は標準ライブラリのみ
+- `python -m ingest.gmo_history --csv <path>` … 取引ツールからエクスポートした約定履歴 CSV(英語/日本語ヘッダ両対応)。API の1ヶ月より前の期間はこちら
+
+`positionId` で `trades` と突合し、`settleType=CLOSE` の `lossGain` を `pnl_jpy`、`price` を
+`exit_price` に。`OPEN` は `entry_price` が未設定の trade を補完する。
+
 ## 次の一手(exact parity)
 
 1. `監視対象ボット` からシグナル判定**と SL/TP/エグジット計算**を純粋関数として抽出 → `strategy_core.py`
