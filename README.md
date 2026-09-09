@@ -62,7 +62,7 @@
 
 ## スクリーンショット
 
-![dashboard screenshot](docs/screenshot.png)
+![dashboard screenshot](docs/screenshot.jpeg)
 
 実運用ログ(`python -m ingest.ingest --path fxbot.log`)を取り込んだ画面。整合性チェックが実データで動く。
 誰でも同じ画面を試すには `python -m scripts.seed_demo_data`(合成データ・画面上部に「デモ」バナー)。
