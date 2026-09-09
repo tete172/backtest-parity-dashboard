@@ -5,10 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>通貨自動売買ボット 監視ダッシュボード</title>
   <link rel="stylesheet" href="/static/style.css" />
-  <script
-    src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.7/chart.umd.min.js"
-    defer
-  ></script>
+  <!-- Chart.js 4.4.7 を同梱(CDN 依存にしない。オフラインでも動く) -->
+  <script src="/static/chart.umd.min.js" defer></script>
   <script src="/static/dashboard.js" defer></script>
 </head>
 <body>
@@ -87,6 +85,7 @@
 
     <!-- KPI -->
     <section class="kpi-grid" id="kpiGrid"></section>
+    <p id="kpiNote" class="hint" hidden></p>
 
     <!-- チャート -->
     <section class="panel">

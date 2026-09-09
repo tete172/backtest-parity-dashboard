@@ -7,6 +7,10 @@
 *.db
 .ingest_state.json
 
+# 実運用ログ(実取引データ)はコミットしない。ingest/sample_fxbot.log だけ追跡する。
+*.log
+!ingest/sample_fxbot.log
+
 # 大きな OHLC データ(バックテスト検証用チャート)はコミットしない。
 # backtest/sample_ohlc.csv(小さな実データスライス)だけは追跡する。
 /fx_cache/

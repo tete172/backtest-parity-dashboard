@@ -57,13 +57,16 @@ def summary(eng: Engine | None = None) -> dict[str, Any]:
             data_mode = str(row["value"].iloc[0])
 
     closed = trades[trades["status"] == "closed"] if not trades.empty else pd.DataFrame()
+    # ログに決済損益が残るトレードだけを損益計算の対象にする(実ログはほぼ NULL)。
+    with_pnl = closed[closed["pnl_jpy"].notna()] if not closed.empty else pd.DataFrame()
+    pnl_available = len(with_pnl) >= 5
 
     wins = losses = 0
     gross_profit = gross_loss = net_pnl = 0.0
     win_rate = profit_factor = expectancy = 0.0
     avg_win = avg_loss = 0.0
-    if not closed.empty:
-        pnl = closed["pnl_jpy"].fillna(0.0)
+    if pnl_available:
+        pnl = with_pnl["pnl_jpy"].astype(float)
         wins = int((pnl > 0).sum())
         losses = int((pnl <= 0).sum())
         gross_profit = float(pnl[pnl > 0].sum())
@@ -75,9 +78,15 @@ def summary(eng: Engine | None = None) -> dict[str, Any]:
         avg_win = float(pnl[pnl > 0].mean()) if wins else 0.0
         avg_loss = float(pnl[pnl <= 0].mean()) if losses else 0.0
 
+    # 実データではログに決済記録が無く trades が閉じないため、最新の
+    # equity_snapshots.open_positions(ボットの「現在ポジション」ログ)を優先。
     open_positions = (
         int((trades["status"] == "open").sum()) if not trades.empty else 0
     )
+    if not eq.empty and "open_positions" in eq.columns and eq["open_positions"].notna().any():
+        e_op = eq.copy()
+        e_op["ts"] = _to_dt(e_op["ts"])
+        open_positions = int(e_op.sort_values("ts")["open_positions"].iloc[-1])
 
     # --- 最大ドローダウン(日次エクイティから)---
     max_dd_pct = 0.0
@@ -134,18 +143,25 @@ def summary(eng: Engine | None = None) -> dict[str, Any]:
         "kpi": {
             "total_trades": int(len(closed)),
             "open_positions": open_positions,
-            "wins": wins,
-            "losses": losses,
-            "win_rate": round(win_rate, 4),
-            "gross_profit_jpy": round(gross_profit, 0),
-            "gross_loss_jpy": round(gross_loss, 0),
-            "net_pnl_jpy": round(net_pnl, 0),
-            "profit_factor": (
-                None if profit_factor == float("inf") else round(profit_factor, 2)
+            "pnl_available": pnl_available,
+            "pnl_note": (
+                None if pnl_available else
+                "実ログに決済損益の記録なし(GMO 側 OCO で決済されるため)。"
+                "損益系は GMO 約定履歴の取り込みが必要。"
             ),
-            "expectancy_jpy": round(expectancy, 0),
-            "avg_win_jpy": round(avg_win, 0),
-            "avg_loss_jpy": round(avg_loss, 0),
+            "wins": wins if pnl_available else None,
+            "losses": losses if pnl_available else None,
+            "win_rate": round(win_rate, 4) if pnl_available else None,
+            "gross_profit_jpy": round(gross_profit, 0) if pnl_available else None,
+            "gross_loss_jpy": round(gross_loss, 0) if pnl_available else None,
+            "net_pnl_jpy": round(net_pnl, 0) if pnl_available else None,
+            "profit_factor": (
+                None if (not pnl_available or profit_factor == float("inf"))
+                else round(profit_factor, 2)
+            ),
+            "expectancy_jpy": round(expectancy, 0) if pnl_available else None,
+            "avg_win_jpy": round(avg_win, 0) if pnl_available else None,
+            "avg_loss_jpy": round(avg_loss, 0) if pnl_available else None,
             "max_drawdown_pct": round(max_dd_pct, 1),
         },
         "account": account,

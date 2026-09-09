@@ -138,15 +138,17 @@ function renderKPI(s) {
   const isDemo = typeof s.data_mode === "string" && s.data_mode.startsWith("demo");
   banner.hidden = !isDemo;
   if (isDemo) document.getElementById("demoBannerMode").textContent = "(" + s.data_mode + ")";
+  const na = "—";
   const cards = [
-    ["累積損益", yen(k.net_pnl_jpy), sign(k.net_pnl_jpy)],
-    ["勝率", pct(k.win_rate), ""],
-    ["プロフィットファクター", k.profit_factor ?? "-", ""],
-    ["最大ドローダウン", (k.max_drawdown_pct ?? 0).toFixed(1) + " %", "neg"],
+    ["累積損益", k.pnl_available ? yen(k.net_pnl_jpy) : na, sign(k.net_pnl_jpy)],
+    ["勝率", k.pnl_available ? pct(k.win_rate) : na, ""],
+    ["プロフィットファクター", k.pnl_available ? (k.profit_factor ?? "-") : na, ""],
+    ["有効証拠金の最大下落", (k.max_drawdown_pct ?? 0).toFixed(1) + " %", "neg"],
     ["総取引数(決済済)", k.total_trades, ""],
-    ["オープン中", k.open_positions, ""],
-    ["期待値/取引", yen(k.expectancy_jpy), sign(k.expectancy_jpy)],
-    ["平均利益 / 平均損失", yen(k.avg_win_jpy) + " / " + yen(k.avg_loss_jpy), ""],
+    ["現在ポジション", k.open_positions, ""],
+    ["期待値/取引", k.pnl_available ? yen(k.expectancy_jpy) : na, sign(k.expectancy_jpy)],
+    ["平均利益 / 平均損失",
+      k.pnl_available ? yen(k.avg_win_jpy) + " / " + yen(k.avg_loss_jpy) : na, ""],
   ];
   document.getElementById("kpiGrid").innerHTML = cards
     .map(
@@ -154,6 +156,12 @@ function renderKPI(s) {
         `<div class="kpi"><div class="label">${label}</div><div class="value ${cls}">${value}</div></div>`
     )
     .join("");
+
+  const pnlNote = document.getElementById("kpiNote");
+  if (pnlNote) {
+    pnlNote.textContent = k.pnl_note || "";
+    pnlNote.hidden = !k.pnl_note;
+  }
 
   // ボット死活
   const dot = document.getElementById("botDot");

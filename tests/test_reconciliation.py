@@ -32,19 +32,35 @@ def _status(result: dict, key: str) -> str:
     return next(c["status"] for c in result["checks"] if c["key"] == key)
 
 
-def test_execution_rate_fail_when_many_insufficient(engine, session):
+def test_execution_rate_collapses_retries_and_fails(engine, session):
+    # 「取引機会」= 連続する同一(ペア×手法)の発注試行を 1 つに畳む。
+    # 機会1: 2件約定 → taken。機会2〜9: 別日に単発の証拠金不足 → missed。
     for i in range(2):
         session.add(SignalEvent(ts=_dt(i), pair="USD_JPY", strategy="SB",
                                 event_type="order", result="EXECUTED",
                                 position_id=f"e{i}", line_hash=f"h{i}"))
-    for i in range(8):
-        session.add(SignalEvent(ts=_dt(i), pair="USD_JPY", strategy="SB",
+    for d in range(1, 9):  # 1日ずつ離して別機会にする
+        session.add(SignalEvent(ts=_dt(24 * d), pair="USD_JPY", strategy="SB",
                                 event_type="order", result="MARGIN_INSUFFICIENT",
-                                line_hash=f"n{i}"))
+                                line_hash=f"n{d}"))
     session.commit()
     r = reconciliation.reconcile(engine)
+    # 機会 9 件中 1 件だけ約定 → 11% → fail
     assert _status(r, "execution_rate") == "fail"
     assert r["verdict"] == "fail"
+
+
+def test_execution_rate_ok_when_retry_eventually_fills(engine, session):
+    # 同じセットアップを 5 時間連続で試行し、最後に約定 → 1 機会・taken → ok
+    for i in range(4):
+        session.add(SignalEvent(ts=_dt(i), pair="EUR_JPY", strategy="SB",
+                                event_type="order", result="MARGIN_INSUFFICIENT",
+                                line_hash=f"m{i}"))
+    session.add(SignalEvent(ts=_dt(4), pair="EUR_JPY", strategy="SB",
+                            event_type="order", result="EXECUTED",
+                            position_id="x", line_hash="mx"))
+    session.commit()
+    assert _status(reconciliation.reconcile(engine), "execution_rate") == "ok"
 
 
 def test_double_execution_detected(engine, session):

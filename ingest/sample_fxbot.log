@@ -1,21 +1,37 @@
-2026-09-01 09:01:03 INFO  [cycle]   メインチェック開始 cycle=20260901-0901 pairs=12
-2026-09-01 09:01:04 INFO  [account] 有効証拠金=302923 残高=310450 必要証拠金=41200 証拠金維持率=735.2 建玉数=2
-2026-09-01 09:01:06 INFO  [signal]  pair=USD_JPY strategy=SB side=LONG action=ENTRY risk_pct=0.02 detail=entry_signal
-2026-09-01 09:01:08 INFO  [order]   pair=USD_JPY strategy=SB side=LONG result=EXECUTED positionId=1000001 price=147.512 lot=8000
-2026-09-01 09:01:09 INFO  [signal]  pair=GBP_USD strategy=MACD side=SHORT action=ENTRY risk_pct=0.01 detail=entry_signal
-2026-09-01 09:01:10 WARN  [order]   pair=GBP_USD strategy=MACD side=SHORT result=MARGIN_INSUFFICIENT detail="Trading margin is insufficient"
-2026-09-01 09:01:11 INFO  [signal]  pair=GBP_USD strategy=MACD side=SHORT action=ENTRY risk_pct=0.01 detail=entry_signal
-2026-09-01 09:01:12 INFO  [order]   pair=GBP_USD strategy=MACD side=SHORT result=EXECUTED positionId=1000002 price=1.34210 lot=6000
-2026-09-01 10:01:02 INFO  [cycle]   メインチェック開始 cycle=20260901-1001 pairs=12
-2026-09-01 10:01:03 INFO  [account] 有効証拠金=301880 残高=310450 必要証拠金=62400 証拠金維持率=483.8 建玉数=3
-2026-09-01 10:01:05 INFO  [signal]  pair=AUD_JPY strategy=DM_PSAR side=LONG action=ENTRY risk_pct=0.01 detail=entry_signal
-2026-09-01 10:01:06 WARN  [order]   pair=AUD_JPY strategy=DM_PSAR side=LONG result=MARGIN_INSUFFICIENT detail="Trading margin is insufficient"
-2026-09-01 12:33:19 INFO  [cycle]   メインチェック開始 cycle=20260901-1233 pairs=12
-2026-09-01 12:33:20 INFO  [account] 有効証拠金=307075 残高=314602 必要証拠金=41200 証拠金維持率=745.3 建玉数=2
-2026-09-01 12:33:22 INFO  [exit]    pair=USD_JPY strategy=SB side=LONG result=CLOSED positionId=1000001 price=148.031 pnl_jpy=4152 reason=TP
-2026-09-02 03:15:04 INFO  [cycle]   メインチェック開始 cycle=20260902-0315 pairs=12
-2026-09-02 03:15:05 INFO  [account] 有効証拠金=305090 残高=312855 必要証拠金=20600 証拠金維持率=1481.0 建玉数=1
-2026-09-02 03:15:07 INFO  [exit]    pair=GBP_USD strategy=MACD side=SHORT result=CLOSED positionId=1000002 price=1.35015 pnl_jpy=-1747 reason=SL
-2026-09-02 09:01:01 INFO  [cycle]   メインチェック開始 cycle=20260902-0901 pairs=12
-2026-09-02 09:01:02 INFO  [account] 有効証拠金=304980 残高=311108 必要証拠金=0 証拠金維持率=0.0 建玉数=0
-2026-09-02 09:01:04 DEBUG [misc]    シグナルなし(全ペア条件未成立)
+==============================================================
+  GMOコイン FX Bot【4手法統合版】
+  最大ポジション        : 6（全手法合計）
+==============================================================
+[2026-06-09 15:01:02] メインチェック開始（4手法）
+[2026-06-09 15:01:02] 有効証拠金: 109,097円
+[2026-06-09 15:01:03] 現在ポジション: 0 / 6
+[2026-06-09 15:01:03]   [USD_JPY] シグナルなし。
+[2026-06-09 15:01:03]   [AUD_JPY] ★ [SB] SELL シグナル！
+[2026-06-09 15:01:03]            price=112.82750  SL=113.25256  TP=112.32036
+[2026-06-09 15:01:03]            units=10,000  risk=6,955円
+[2026-06-09 15:01:06]   [AUD_JPY] 約定確認 positionId=8882904
+[2026-06-09 15:01:07]   [AUD_JPY] [OCO決済発注] AUD_JPY SELL TP=112.32036 SL=113.25256
+
+==============================================================
+[2026-06-09 16:01:04] メインチェック開始（4手法）
+[2026-06-09 16:01:04] 有効証拠金: 108,540円
+[2026-06-09 16:01:05] 現在ポジション: 1 / 6
+[2026-06-09 16:01:05]   [AUD_JPY] ポジションあり。スキップ。
+[2026-06-09 16:01:06]   [CAD_JPY] ★ [MACD] BUY シグナル！
+[2026-06-09 16:01:06]            price=95.11000  SL=94.80000  TP=95.73000
+[2026-06-09 16:01:06]            units=80,000  risk=3,477円
+[2026-06-09 16:01:08]   [CAD_JPY] 発注失敗: {'status': 1, 'messages': [{'message_code': 'ERR-201', 'message_string': 'Trading margin is insufficient.'}], 'responsetime': '2026-06-09T16:01:07.049Z'}
+
+==============================================================
+[2026-07-16 11:01:07] メインチェック開始（4手法）
+[2026-07-16 11:01:07] 有効証拠金: 121,300円
+[2026-07-16 11:01:08] 現在ポジション: 3 / 6
+[2026-07-16 11:01:08]   [CAD_JPY] ★ [SB] BUY シグナル！
+[2026-07-16 11:01:08]            price=110.20000  SL=109.90000  TP=110.80000
+[2026-07-16 11:01:08]            units=20,000  risk=2,700円
+[2026-07-16 11:01:08]   [CAD_JPY] 複数positionId検出: 2件 全件にエグジット登録
+[2026-07-16 11:01:09]   [CAD_JPY] 約定確認 positionId=9101234
+[2026-07-16 11:01:10]   [CAD_JPY] 約定確認 positionId=9101235
+
+==============================================================
+[2026-08-19 12:48:23] [決済検知] AUD_JPY pid=8882904

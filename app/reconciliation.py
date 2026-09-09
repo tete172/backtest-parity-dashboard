@@ -52,30 +52,77 @@ def _check(key, label, status, expected, actual, note=""):
 # --------------------------------------------------------------------------- #
 # 個別チェック
 # --------------------------------------------------------------------------- #
-def _check_execution_rate(ev: pd.DataFrame) -> dict:
-    orders = ev[ev["event_type"] == "order"] if not ev.empty else pd.DataFrame()
+_OPP_GAP_HOURS = 3  # これ以内の連続した同一(ペア×手法)の発注試行は 1 取引機会にまとめる
+
+
+def _opportunities(ev: pd.DataFrame) -> pd.DataFrame:
+    """連続する同一(ペア×手法)の発注試行を 1 つの「取引機会」に畳む。
+
+    ライブのボットは相場条件が続く限り毎時「シグナル！」を出すため、証拠金不足で
+    入れないと同じセットアップが何度もログされる(バックテストなら 1 トレード)。
+    実行率・比率はこの畳み込み後の機会数で見ないと過大評価になる。
+    """
+    orders = ev[ev["event_type"] == "order"].copy() if not ev.empty else pd.DataFrame()
     if orders.empty:
-        return _check("execution_rate", "シグナル→約定の実行率", _INFO,
-                      "≈100%(バックテストは全シグナル約定前提)", "データなし")
-    executed = int((orders["result"] == "EXECUTED").sum())
-    insufficient = int((orders["result"] == "MARGIN_INSUFFICIENT").sum())
-    skipped = int((orders["result"] == "SKIPPED").sum())
-    denom = executed + insufficient + skipped
-    rate = executed / denom if denom else 0.0
+        return pd.DataFrame()
+    orders["ts"] = pd.to_datetime(orders["ts"], utc=True)
+    orders = orders.sort_values(["pair", "strategy", "ts"])
+    gap = pd.Timedelta(hours=_OPP_GAP_HOURS)
+    rows: list[dict] = []
+    for (pair, strat), g in orders.groupby(["pair", "strategy"], dropna=False):
+        cur = None
+        prev_ts = None
+        for _, r in g.iterrows():
+            if cur is None or (r["ts"] - prev_ts) > gap:
+                if cur is not None:
+                    rows.append(cur)
+                cur = {"pair": pair, "strategy": strat, "start": r["ts"],
+                       "attempts": 0, "executed": 0, "insufficient": 0, "other": 0}
+            cur["attempts"] += 1
+            res = r["result"]
+            if res == "EXECUTED":
+                cur["executed"] += 1
+            elif res == "MARGIN_INSUFFICIENT":
+                cur["insufficient"] += 1
+            else:
+                cur["other"] += 1
+            prev_ts = r["ts"]
+        if cur is not None:
+            rows.append(cur)
+    df = pd.DataFrame(rows)
+    df["outcome"] = df.apply(
+        lambda x: "taken" if x["executed"] > 0
+        else "missed_margin" if x["insufficient"] > 0
+        else "missed_other", axis=1,
+    )
+    return df
+
+
+def _check_execution_rate(ev: pd.DataFrame) -> dict:
+    opp = _opportunities(ev)
+    if opp.empty:
+        return _check("execution_rate", "取引機会 → 約定の実行率", _INFO,
+                      "≈100%(バックテストは全機会で約定前提)", "データなし")
+    n = len(opp)
+    taken = int((opp["outcome"] == "taken").sum())
+    missed_margin = int((opp["outcome"] == "missed_margin").sum())
+    missed_other = int((opp["outcome"] == "missed_other").sum())
+    raw_attempts = int(opp["attempts"].sum())
+    rate = taken / n if n else 0.0
     if rate < baseline.EXECUTION_RATE_FAIL:
         status = _FAIL
     elif rate < baseline.EXECUTION_RATE_WARN:
         status = _WARN
     else:
         status = _OK
-    lost = insufficient + skipped
     return _check(
-        "execution_rate", "シグナル→約定の実行率", status,
+        "execution_rate", "取引機会 → 約定の実行率", status,
         f"≥ {baseline.EXECUTION_RATE_WARN:.0%}",
         f"{rate:.1%}",
-        f"発注 {denom} 件中 {lost} 件が未約定"
-        f"(証拠金不足 {insufficient} / スキップ {skipped})。"
-        f"バックテストは全約定前提のため、この分だけ想定取引を取りこぼしている。",
+        f"取引機会 {n} 件中 約定 {taken} / 証拠金不足で見送り {missed_margin} / "
+        f"その他失敗 {missed_other}。"
+        f"(生ログの発注試行は {raw_attempts} 回だが、証拠金不足による毎時の再試行を "
+        f"±{_OPP_GAP_HOURS}h で 1 機会にまとめた。バックテストは全機会で約定する前提。)",
     )
 
 
@@ -109,25 +156,29 @@ def _check_signal_mix(ev: pd.DataFrame) -> dict:
 
 
 def _check_risk_pct(trades: pd.DataFrame) -> dict:
-    closed_or_open = trades if not trades.empty else pd.DataFrame()
-    if closed_or_open.empty or closed_or_open["risk_pct"].dropna().empty:
-        return _check("risk_pct", "手法別リスク% の一致", _INFO,
+    """手法別の実効リスク%(= risk円 / 有効証拠金)を中央値で並記。
+
+    実運用では有効証拠金が大きく変動する(0円到達もあり)ため厳密一致は求めず、
+    中央値がおおむね設定どおりかを目安で見る(このリポジトリの baseline はサンプル値)。
+    """
+    df = trades if not trades.empty else pd.DataFrame()
+    if df.empty or df["risk_pct"].dropna().empty:
+        return _check("risk_pct", "手法別リスク%(中央値)", _INFO,
                       baseline.STRATEGY_RISK_PCT, "risk_pct 未記録")
-    mismatches = []
-    actual = {}
-    for strat, grp in closed_or_open.groupby("strategy"):
-        vals = sorted({round(float(x), 5) for x in grp["risk_pct"].dropna().unique()})
-        actual[strat] = vals
-        exp = baseline.STRATEGY_RISK_PCT.get(strat)
-        if exp is None:
-            continue
-        if vals != [round(exp, 5)]:
-            mismatches.append(f"{strat}: 実測 {vals} vs 期待 {exp}")
-    status = _WARN if mismatches else _OK
+    med = {}
+    for strat, grp in df.groupby("strategy"):
+        v = grp["risk_pct"].dropna()
+        if len(v):
+            med[strat] = round(float(v.median()), 4)
+    # 桁が明らかにおかしい(0.5% 未満 or 15% 超)ものだけ警告
+    bad = [f"{k}={v:.2%}" for k, v in med.items() if not (0.005 <= v <= 0.15)]
+    status = _WARN if bad else _INFO
     return _check(
-        "risk_pct", "手法別リスク% の一致", status,
-        baseline.STRATEGY_RISK_PCT, actual,
-        "; ".join(mismatches) if mismatches else "全手法で一致",
+        "risk_pct", "手法別リスク%(中央値)", status,
+        {k: f"{v:.2%}" for k, v in baseline.STRATEGY_RISK_PCT.items()},
+        {k: f"{v:.2%}" for k, v in med.items()},
+        (f"想定外の桁: {', '.join(bad)}" if bad
+         else "中央値はおおむね設定どおり(有効証拠金の変動で試行ごとにブレる)。"),
     )
 
 
@@ -154,22 +205,28 @@ def _sweep_max_concurrent(trades: pd.DataFrame) -> tuple[int, int]:
 
 
 def _check_position_limit(trades: pd.DataFrame, eq: pd.DataFrame) -> dict:
-    mx, hit = _sweep_max_concurrent(trades)
-    snap_max = int(eq["open_positions"].max()) if not eq.empty else 0
-    observed_max = max(mx, snap_max)
     limit = baseline.POSITION_LIMIT_IN_CODE
+    # ボットが毎サイクル出力する「現在ポジション: N / 6」を信頼(実データの真値)。
+    # trades 由来のスイープはログに決済記録が無いと過大になるためフォールバックのみ。
+    if not eq.empty and "open_positions" in eq.columns and eq["open_positions"].notna().any():
+        observed_max = int(eq["open_positions"].max())
+        hit = int((eq["open_positions"] == observed_max).sum())
+        src = "現在ポジション ログ"
+    else:
+        observed_max, hit = _sweep_max_concurrent(trades)
+        src = "trades からスイープ"
     if observed_max >= limit:
         status = _WARN
         note = (
-            f"最大同時建玉数が {observed_max}。本番コードの CONFIG['max_positions']={limit} に"
-            f"達しており(到達 {hit} 回)、ドキュメント方針「上限なし」と不一致(2026-09-05 に発見済みの既知事項)。"
+            f"最大同時建玉数 {observed_max}({src})。コードの CONFIG['max_positions']={limit} に達しており "
+            f"(到達 {hit} 回)、方針「上限なし」と不一致。"
         )
     else:
         status = _OK
-        note = f"最大同時建玉数 {observed_max}。コードの上限 {limit} 未満。"
+        note = f"最大同時建玉数 {observed_max}({src})。コードの上限 {limit} 未満で問題なし。"
     return _check(
         "position_limit", "同時建玉数の上限", status,
-        "上限なし(方針) / コードは 6",
+        f"上限なし(方針) / コードは {limit}",
         str(observed_max), note,
     )
 
@@ -300,35 +357,40 @@ def _check_trade_parity(eng: Engine) -> dict:
 
 def _perf_vs_backtest(trades: pd.DataFrame, eq: pd.DataFrame) -> dict:
     closed = trades[trades["status"] == "closed"] if not trades.empty else pd.DataFrame()
+    with_pnl = closed[closed["pnl_jpy"].notna()] if not closed.empty else pd.DataFrame()
     n = len(closed)
-    live = {"trades": n}
-    if n:
-        pnl = closed["pnl_jpy"].fillna(0.0)
-        gp = float(pnl[pnl > 0].sum())
-        gl = float(-pnl[pnl <= 0].sum())
+    live: dict[str, Any] = {"trades": n, "trades_with_pnl": int(len(with_pnl))}
+    notes = []
+    if len(with_pnl) >= 5:
+        pnl = with_pnl["pnl_jpy"].astype(float)
+        gp, gl = float(pnl[pnl > 0].sum()), float(-pnl[pnl <= 0].sum())
         live["win_rate"] = f"{(pnl > 0).mean():.1%}"
         live["profit_factor"] = round(gp / gl, 2) if gl else None
         live["net_pnl_jpy"] = round(float(pnl.sum()), 0)
+    else:
+        notes.append("損益は実ログに記録なし(GMO 約定履歴が必要)")
+
+    zero_hit = 0
     if not eq.empty:
         e = eq.copy()
         e["ts"] = pd.to_datetime(e["ts"], utc=True)
         e = e.sort_values("ts")
         days = max((e["ts"].iloc[-1] - e["ts"].iloc[0]).days, 1)
-        first, last = float(e["equity_jpy"].iloc[0]), float(e["equity_jpy"].iloc[-1])
-        if first > 0:
-            # 短期間を年率換算すると誇張になるので、実測期間のリターンを出す。
-            live["period_return_pct"] = round((last / first - 1) * 100, 1)
-            if days >= 365:
-                live["annualized_return_pct"] = round(((last / first) ** (365 / days) - 1) * 100, 1)
+        eqv = e["equity_jpy"].astype(float)
+        zero_hit = int((eqv <= 0).sum())
         daily = e.set_index("ts")["equity_jpy"].resample("1D").last().dropna()
         if not daily.empty:
-            dd = (daily / daily.cummax() - 1.0).min()
-            live["max_drawdown_pct"] = round(float(dd) * 100, 1)
+            live["max_drawdown_pct"] = round(float((daily / daily.cummax() - 1.0).min()) * 100, 1)
+        live["equity_min_jpy"] = round(float(eqv.min()), 0)
+        live["equity_max_jpy"] = round(float(eqv.max()), 0)
         live["observed_days"] = days
-    status = _INFO
+        if zero_hit:
+            notes.append(f"有効証拠金が {zero_hit} 回 0 円に到達(実データ・その後入金で復帰)")
+
+    status = _WARN if zero_hit else _INFO
     note = (
-        f"運用 {live.get('observed_days', 0)} 日 / {n} 取引。"
-        f"{'判定にはサンプル不足(参考値)' if n < baseline.MIN_TRADES_FOR_PERF_JUDGEMENT else '目安として比較可能'}。"
+        f"運用 {live.get('observed_days', 0)} 日 / 決済済 {n} 取引。"
+        + ("。".join([""] + notes) if notes else "")
     )
     return _check(
         "performance", "成績 vs バックテスト(参考)", status,
