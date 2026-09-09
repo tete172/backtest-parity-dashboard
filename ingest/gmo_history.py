@@ -10,7 +10,7 @@ OPEN 約定は entry_price が未設定の trade を補完する。
 
 API 認証は監視対象ボットと同じ HMAC-SHA256(署名対象パスは `/private` を除いた `/v1/...`)。
 キーは環境変数 or `.env` の GMO_API_KEY / GMO_API_SECRET(公開リポジトリにはコミットしない)。
-依存は標準ライブラリのみ(requests 等は不要)。
+依存は標準ライブラリのみ(requests 等は不要。TLS の CA 検証は certifi があれば使用)。
 """
 
 from __future__ import annotations
@@ -20,6 +20,7 @@ import csv
 import hashlib
 import hmac
 import json
+import ssl
 import time
 import urllib.request
 from datetime import datetime, timezone
@@ -66,12 +67,22 @@ def _ts(v) -> datetime | None:
 
 def _entry_side_from_close(close_side: str | None) -> str:
     # 決済約定の side はエントリーと逆(BUYで入った建玉は SELL で決済)
-    return "SHORT" if (close_side or "").upper() == "BUY" else "LONG"
+    return "SHORT" if _norm_side(close_side) == "BUY" else "LONG"
 
 
 # --------------------------------------------------------------------------- #
 # API 取得
 # --------------------------------------------------------------------------- #
+def _ssl_context() -> ssl.SSLContext:
+    """TLS 証明書検証は有効のまま。Windows で OS の CA を拾えない場合は certifi を使う。"""
+    try:
+        import certifi
+
+        return ssl.create_default_context(cafile=certifi.where())
+    except Exception:
+        return ssl.create_default_context()
+
+
 def _headers(secret: str, key: str, method: str, path: str, body: str = "") -> dict:
     ts = str(int(time.time() * 1000))
     sign = hmac.new(
@@ -83,12 +94,17 @@ def _headers(secret: str, key: str, method: str, path: str, body: str = "") -> d
 def fetch_executions(key: str, secret: str, symbols=None, max_pages: int = 30) -> list[dict]:
     """latestExecutions を全ペア・全ページ取得(直近約1ヶ月ぶん)。"""
     out: list[dict] = []
+    ctx = _ssl_context()
+    first = True
     for sym in symbols or _SYMBOLS:
         for page in range(1, max_pages + 1):
+            if not first:
+                time.sleep(1.1)  # Private API は概ね 1 req/s。全リクエスト間で待つ
+            first = False
             path = "/v1/latestExecutions"
             url = f"{_BASE_PRIVATE}{path}?symbol={sym}&page={page}&count=100"
             req = urllib.request.Request(url, headers=_headers(secret, key, "GET", path))
-            with urllib.request.urlopen(req, timeout=15) as r:  # noqa: S310 (公式API)
+            with urllib.request.urlopen(req, timeout=15, context=ctx) as r:  # noqa: S310
                 data = json.loads(r.read().decode())
             if data.get("status") != 0:
                 raise RuntimeError(f"{sym} p{page}: {data.get('messages') or data}")
@@ -96,7 +112,6 @@ def fetch_executions(key: str, secret: str, symbols=None, max_pages: int = 30) -
             out.extend(lst)
             if len(lst) < 100:
                 break
-            time.sleep(0.4)  # Private API のレート制限に配慮
     return out
 
 
@@ -104,15 +119,34 @@ def fetch_executions(key: str, secret: str, symbols=None, max_pages: int = 30) -
 # CSV 取得(正規化済み: positionId,symbol,side,settleType,price,size,lossGain,timestamp)
 # --------------------------------------------------------------------------- #
 _CSV_ALIASES = {
-    "positionId": ("positionid", "ポジションid", "建玉番号"),
-    "symbol": ("symbol", "通貨ペア", "銘柄"),
-    "side": ("side", "売買"),
-    "settleType": ("settletype", "決済区分", "取引区分"),
-    "price": ("price", "約定rate", "約定レート", "約定価格"),
-    "size": ("size", "約定数量", "数量"),
-    "lossGain": ("lossgain", "決済損益", "実現損益", "損益"),
-    "timestamp": ("timestamp", "日時", "約定日時", "決済日時"),
+    "positionId": ("positionid", "ポジションid", "建玉番号", "建玉id", "ポジション番号"),
+    "symbol": ("symbol", "通貨ペア", "銘柄", "商品"),
+    "side": ("side", "売買", "売買区分"),
+    "settleType": ("settletype", "決済区分", "取引区分", "新規決済区分", "区分"),
+    "price": ("price", "約定rate", "約定レート", "約定価格", "レート"),
+    "size": ("size", "約定数量", "数量", "取引数量"),
+    "lossGain": ("lossgain", "決済損益", "実現損益", "損益", "決済損益(円)"),
+    "timestamp": ("timestamp", "日時", "約定日時", "決済日時", "日付", "約定日", "取引日時", "決済日"),
 }
+
+
+def _norm_settle(v) -> str:
+    """CSV/API の取引区分を OPEN / CLOSE に正規化する。"""
+    s = str(v or "").strip().lower()
+    if s in ("close", "決済", "清算", "精算", "settle", "決済注文"):
+        return "CLOSE"
+    if s in ("open", "新規", "新規注文"):
+        return "OPEN"
+    return s.upper()
+
+
+def _norm_side(v) -> str:
+    s = str(v or "").strip().lower()
+    if s in ("buy", "買", "買い", "b", "long"):
+        return "BUY"
+    if s in ("sell", "売", "売り", "s", "short"):
+        return "SELL"
+    return s.upper()
 
 
 def parse_csv(path: str) -> list[dict]:
@@ -145,7 +179,7 @@ def apply_executions(session: Session, execs: list[dict]) -> dict[str, int]:
         if not pid:
             counts["skipped"] += 1
             continue
-        stype = (e.get("settleType") or "").upper()
+        stype = _norm_settle(e.get("settleType"))
         px = _f(e.get("price"))
         ts = _ts(e.get("timestamp"))
         tr = session.scalar(select(Trade).where(Trade.position_id == pid))

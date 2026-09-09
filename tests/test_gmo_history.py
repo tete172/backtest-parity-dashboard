@@ -74,6 +74,20 @@ def test_open_execution_fills_entry_price(session):
     assert tr.entry_price == pytest.approx(147.512) and tr.status == "open"
 
 
+def test_japanese_settle_and_side_are_normalized(session):
+    """GMO の日本語 CSV(区分=決済 / 売買=買)でも CLOSE 扱いになり損益が入る。"""
+    _mk_trade(session, "333")
+    c = gh.apply_executions(session, [{
+        "positionId": "333", "symbol": "USD_JPY", "side": "買", "settleType": "決済",
+        "price": "149.2", "size": "10000", "lossGain": "-880",
+        "timestamp": "2026/06/03 12:00:00",
+    }])
+    session.commit()
+    assert c["close_matched"] == 1
+    tr = session.scalar(select(Trade).where(Trade.position_id == "333"))
+    assert tr.status == "closed" and tr.pnl_jpy == pytest.approx(-880)
+
+
 def test_parse_csv_english_and_japanese_headers(tmp_path):
     p = tmp_path / "en.csv"
     p.write_text(
