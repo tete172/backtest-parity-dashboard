@@ -43,7 +43,9 @@
 
 ## スクリーンショット
 
-`docs/screenshot.png`(デモデータ投入後の画面。`python -m scripts.seed_demo_data` で誰でも同じ画面を再現可能）。
+![dashboard screenshot](docs/screenshot.png)
+
+デモデータ投入後の画面(`python -m scripts.seed_demo_data` で誰でも同じ画面を再現可能)。
 KPI などの数値は**合成データ**で、画面上部に「デモデータ表示中」バナーが出る
 (実ログを `python -m ingest.ingest` で取り込むとバナーは消え `data_mode=live` になる)。
 
