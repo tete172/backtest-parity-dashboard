@@ -67,11 +67,14 @@
 
 ![dashboard screenshot](docs/screenshot.jpeg)
 
-実運用ログ(`python -m ingest.ingest --path fxbot.log`)を取り込んだ画面。整合性チェックが実データで動く。
-誰でも同じ画面を試すには `python -m scripts.seed_demo_data`(合成データ・画面上部に「デモ」バナー)。
+実運用ログ(3 ヶ月・41,697 行)を `python -m ingest.ingest --path fxbot.log` で取り込んだ画面(`data_mode=live`・デモバナーなし)。
+
+- **実データで動いている**: バックテスト整合性チェック、取引機会→約定の実行率、手法別シグナル比率、同時建玉数、有効証拠金の推移
+- **「—」表示**: 損益・勝率・PF・期待値の KPI タイル(ログに決済損益が残らないため。上の「判明したこと」の注記参照)
+- 「有効証拠金の最大下落」が **−100%** なのは、この 3 ヶ月で実際に 0 円へ到達しているため
+
 Chart.js は同梱(`app/static/chart.umd.min.js`)なのでオフラインでもグラフが出る。
-KPI などの数値は**合成データ**で、画面上部に「デモデータ表示中」バナーが出る
-(実ログを `python -m ingest.ingest` で取り込むとバナーは消え `data_mode=live` になる)。
+合成データで試すには `python -m scripts.seed_demo_data`(画面上部に「デモデータ表示中」バナーが出る)。
 
 ## ドキュメント
 
@@ -301,7 +304,7 @@ fxbot_dashboard/
 │   ├── aggregations.py    # pandas 集計(DB 方言非依存・テスト対象)
 │   ├── main.py            # FastAPI ルーティング + ヘルスチェック
 │   ├── templates/index.html
-│   └── static/            # dashboard.js(Chart.js CDN)・style.css
+│   └── static/            # dashboard.js・style.css・chart.umd.min.js(同梱)
 ├── backtest/              # ★バックテスト再現(シグナル + トレード・損益)
 │   ├── indicators.py      # EMA / MACD / Bollinger / ATR / PSAR(ベクトル化)
 │   ├── strategies.py      # 4手法の entry シグナル生成(仕様からの参照実装 → PARITY.md)
@@ -324,4 +327,4 @@ fxbot_dashboard/
 - IaC 化(Terraform)と CI(pytest + ruff)
 - 取り込みの EventBridge / systemd タイマー化
 - しきい値超過時の Slack 通知(現状は画面表示のみ)
-- 実ログ書式の確定(`parser.py` の正規表現は想定書式ベース。実ファイルに合わせて要調整)
+- 決済損益の実データ化: GMO 約定履歴を `建玉ID` ではなく「銘柄 + 時刻」でファジー突合するローダ(現状 `ingest/gmo_history.py` は `positionId` 突合。会員ページが約定履歴 CSV 非対応のため未完)
