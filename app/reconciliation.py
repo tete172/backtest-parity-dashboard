@@ -370,24 +370,37 @@ def _perf_vs_backtest(trades: pd.DataFrame, eq: pd.DataFrame) -> dict:
     else:
         notes.append("損益は実ログに記録なし(GMO 約定履歴が必要)")
 
-    zero_hit = 0
+    zero_episodes = 0
     if not eq.empty:
         e = eq.copy()
         e["ts"] = pd.to_datetime(e["ts"], utc=True)
         e = e.sort_values("ts")
         days = max((e["ts"].iloc[-1] - e["ts"].iloc[0]).days, 1)
         eqv = e["equity_jpy"].astype(float)
-        zero_hit = int((eqv <= 0).sum())
+        is_zero = eqv <= 0
+        zero_samples = int(is_zero.sum())
+        # 1時間ごとのスナップショットなので "0円のサンプル数" は "0円になった回数" ではない。
+        # 連続して0円が続く区間(局面)をひとまとまりの episode として数え、その長さ(継続時間)を見る。
+        run_id = (is_zero != is_zero.shift(fill_value=False)).cumsum()
+        zero_runs = e.loc[is_zero.values, "ts"].groupby(run_id[is_zero.values])
+        episodes = zero_runs.agg(["min", "max"]) if zero_samples else pd.DataFrame()
+        zero_episodes = len(episodes)
+        longest_hours = 0.0
+        if not episodes.empty:
+            longest_hours = float((episodes["max"] - episodes["min"]).max().total_seconds() / 3600)
         daily = e.set_index("ts")["equity_jpy"].resample("1D").last().dropna()
         if not daily.empty:
             live["max_drawdown_pct"] = round(float((daily / daily.cummax() - 1.0).min()) * 100, 1)
         live["equity_min_jpy"] = round(float(eqv.min()), 0)
         live["equity_max_jpy"] = round(float(eqv.max()), 0)
         live["observed_days"] = days
-        if zero_hit:
-            notes.append(f"有効証拠金が {zero_hit} 回 0 円に到達(実データ・その後入金で復帰)")
+        if zero_episodes:
+            notes.append(
+                f"有効証拠金が 0 円になった局面が {zero_episodes} 回"
+                f"(最長 {longest_hours / 24:.1f} 日間継続・延べ {zero_samples} 時点・その後入金で復帰)"
+            )
 
-    status = _WARN if zero_hit else _INFO
+    status = _WARN if zero_episodes else _INFO
     note = (
         f"運用 {live.get('observed_days', 0)} 日 / 決済済 {n} 取引。"
         + ("。".join([""] + notes) if notes else "")
