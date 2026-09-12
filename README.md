@@ -133,7 +133,10 @@ flowchart LR
 - 2026-08 に物理ホスト障害で SSH 不通 → AWS CLI から `stop`→`start` でホスト移設して復旧。
   再発防止に `StatusCheckFailed_System` → `ec2:recover` の CloudWatch アラームと systemd 化を追加した。
 
-### ダッシュボード導入後(To-Be / このリポジトリ)
+### ダッシュボード導入後の想定構成(To-Be・未構築)
+
+> ⚠️ **これは設計段階の想定図で、実際には構築していない。** 今動いているのはローカル起動(SQLite・プロセス内キャッシュ)のみ。
+> RDS / ALB / Auto Scaling / ElastiCache は「実務で必要になる設計を検討した」段階(詳細は次節)。
 
 ```mermaid
 flowchart LR

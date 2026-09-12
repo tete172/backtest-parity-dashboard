@@ -188,11 +188,13 @@ flowchart LR
   </section>
 
   <section>
-    <p class="eyebrow">導入後 / To-Be</p>
-    <h2>ダッシュボード導入後 — このリポジトリのデプロイ先(想定)</h2>
+    <p class="eyebrow">導入後 / To-Be・未構築</p>
+    <h2>ダッシュボード導入後の想定構成</h2>
     <p class="whatfor">
+      ⚠️ <strong>これは設計段階の想定図で、実際には構築していない。</strong> 今動いているのはローカル起動(SQLite・プロセス内キャッシュ)のみ。
       ボット本体には手を入れず、既存の <code>fxbot.log</code> を唯一の入力にする疎結合設計。
-      集計は pandas、キャッシュ(Redis)は任意依存、ヘルスチェックは <code>/healthz</code> と <code>/readyz</code> を分離。
+      集計は pandas、キャッシュ(Redis)は任意依存、ヘルスチェックは <code>/healthz</code> と <code>/readyz</code> を分離 ── というアプリ側の設計はこのリポジトリに実装済みで、
+      RDS / ALB / Auto Scaling / ElastiCache は未構築のまま。
     </p>
     <div class="diagram">
       <p class="cap">ログ起点 / ステートレス / 2 AZ 冗長</p>
@@ -203,7 +205,7 @@ flowchart LR
     BOT2["売買ボット"] --> LOG2["fxbot.log"]
   end
   LOG2 -->|"tail / 冪等取り込み"| ING["ingest ワーカー"]
-  subgraph AWS["AWS (ダッシュボードのデプロイ先)"]
+  subgraph AWS["AWS (デプロイ先・想定/未構築)"]
     ING --> RDS[("RDS<br/>PostgreSQL")]
     R53["Route 53"] --> ALB["ALB<br/>HTTPS / ACM"]
     ALB -->|"/healthz"| ASG["EC2 x2 (Auto Scaling)<br/>FastAPI"]
