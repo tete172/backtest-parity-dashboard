@@ -2,7 +2,7 @@
 
 fxbot.log には決済(GMO 側 OCO / SL)の価格・損益が残らないため、これで補完する:
 
-  python -m ingest.gmo_history --api           # GMO Private API(直近1ヶ月ぶん)
+  python -m ingest.gmo_history --api           # GMO Private API(直近約1日ぶん・要毎日実行)
   python -m ingest.gmo_history --csv trades.csv # 正規化済み CSV(古い期間はこちら)
 
 positionId で `trades` と突合し、CLOSE 約定の lossGain を pnl_jpy、price を exit_price に入れる。
@@ -92,7 +92,7 @@ def _headers(secret: str, key: str, method: str, path: str, body: str = "") -> d
 
 
 def fetch_executions(key: str, secret: str, symbols=None, max_pages: int = 30) -> list[dict]:
-    """latestExecutions を全ペア・全ページ取得(直近約1ヶ月ぶん)。"""
+    """latestExecutions を全ペア・全ページ取得(直近約1日ぶん・最大100件/ペア)。"""
     out: list[dict] = []
     ctx = _ssl_context()
     first = True
@@ -232,7 +232,7 @@ def run(execs: list[dict]) -> dict[str, int]:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="GMO 約定履歴で trades の損益を補完")
-    ap.add_argument("--api", action="store_true", help="GMO Private API から取得(直近1ヶ月)")
+    ap.add_argument("--api", action="store_true", help="GMO Private API から取得(直近約1日ぶんのみ・要毎日実行)")
     ap.add_argument("--csv", help="正規化済み約定履歴 CSV のパス(古い期間用)")
     args = ap.parse_args()
 

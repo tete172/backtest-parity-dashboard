@@ -115,7 +115,7 @@ OHLC の CSV は 2 形式に対応(列名の大小・順序は自動判別):
 `fxbot.log` は決済(GMO 側 OCO / SL)の価格・損益を記録しないため、KPI・勝率・PF・
 エクイティカーブ・②トレード損益は実ログだけでは埋まらない。GMO の約定履歴で補完する:
 
-- `python -m ingest.gmo_history --api` … GMO Private API `latestExecutions`(直近約1ヶ月)。
+- `python -m ingest.gmo_history --api` … GMO Private API `latestExecutions`(**直近約1日ぶんのみ**。1ヶ月ではない。毎日実行しないと大半の約定を取りこぼす)。
   `GMO_API_KEY` / `GMO_API_SECRET` を `.env` に。署名は監視対象ボットと同じ HMAC-SHA256、依存は標準ライブラリのみ
 - `python -m ingest.gmo_history --csv <path>` … 取引ツールからエクスポートした約定履歴 CSV(英語/日本語ヘッダ両対応)。API の1ヶ月より前の期間はこちら
 

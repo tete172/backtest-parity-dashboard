@@ -11,6 +11,7 @@ fxbot.log を構造化して 4 テーブルに落とす:
 from __future__ import annotations
 
 from datetime import datetime
+from typing import Optional
 
 from sqlalchemy import DateTime, Float, Index, Integer, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
@@ -36,7 +37,7 @@ class BotHeartbeat(Base):
     ts: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     cycle_id: Mapped[str] = mapped_column(String(32), unique=True)
     pairs_checked: Mapped[int] = mapped_column(Integer, default=0)
-    note: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    note: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
 
 
 class EquitySnapshot(Base):
@@ -47,7 +48,7 @@ class EquitySnapshot(Base):
     balance_jpy: Mapped[float] = mapped_column(Float)
     equity_jpy: Mapped[float] = mapped_column(Float)
     margin_used_jpy: Mapped[float] = mapped_column(Float, default=0.0)
-    margin_ratio: Mapped[float | None] = mapped_column(Float, nullable=True)
+    margin_ratio: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
     open_positions: Mapped[int] = mapped_column(Integer, default=0)
 
 
@@ -58,18 +59,18 @@ class SignalEvent(Base):
     ts: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     pair: Mapped[str] = mapped_column(String(16), index=True)
     strategy: Mapped[str] = mapped_column(String(16), index=True)
-    side: Mapped[str | None] = mapped_column(String(8), nullable=True)
+    side: Mapped[Optional[str]] = mapped_column(String(8), nullable=True)
     # signal(検出) / order(発注結果) / exit(決済)
     event_type: Mapped[str] = mapped_column(String(16), index=True)
     # EXECUTED / MARGIN_INSUFFICIENT / SKIPPED / CLOSED / ...
-    result: Mapped[str | None] = mapped_column(String(24), nullable=True)
-    position_id: Mapped[str | None] = mapped_column(String(32), nullable=True, index=True)
-    price: Mapped[float | None] = mapped_column(Float, nullable=True)
-    lot: Mapped[float | None] = mapped_column(Float, nullable=True)
-    pnl_jpy: Mapped[float | None] = mapped_column(Float, nullable=True)
-    risk_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
-    reason: Mapped[str | None] = mapped_column(String(64), nullable=True)
-    detail: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    result: Mapped[Optional[str]] = mapped_column(String(24), nullable=True)
+    position_id: Mapped[Optional[str]] = mapped_column(String(32), nullable=True, index=True)
+    price: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    lot: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    pnl_jpy: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    risk_pct: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    reason: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
+    detail: Mapped[Optional[str]] = mapped_column(String(255), nullable=True)
     # 同じログ行を 2 回取り込んでも重複しないための冪等キー(raw 行の SHA1)
     line_hash: Mapped[str] = mapped_column(String(40), unique=True)
 
@@ -88,13 +89,13 @@ class Trade(Base):
     entry_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), index=True)
     entry_price: Mapped[float] = mapped_column(Float)
     lot: Mapped[float] = mapped_column(Float)
-    risk_pct: Mapped[float | None] = mapped_column(Float, nullable=True)
-    exit_time: Mapped[datetime | None] = mapped_column(
+    risk_pct: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    exit_time: Mapped[Optional[datetime]] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
-    exit_price: Mapped[float | None] = mapped_column(Float, nullable=True)
-    pnl_jpy: Mapped[float | None] = mapped_column(Float, nullable=True)
-    exit_reason: Mapped[str | None] = mapped_column(String(64), nullable=True)
+    exit_price: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    pnl_jpy: Mapped[Optional[float]] = mapped_column(Float, nullable=True)
+    exit_reason: Mapped[Optional[str]] = mapped_column(String(64), nullable=True)
     status: Mapped[str] = mapped_column(String(8), default="open", index=True)
 
 
@@ -113,8 +114,8 @@ class ParityRun(Base):
     mode: Mapped[str] = mapped_column(String(8), default="signal", index=True)
     ohlc_source: Mapped[str] = mapped_column(String(120))
     bars: Mapped[int] = mapped_column(Integer, default=0)
-    period_start: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    period_end: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    period_start: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    period_end: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
     expected_n: Mapped[int] = mapped_column(Integer, default=0)
     actual_n: Mapped[int] = mapped_column(Integer, default=0)
     matched_n: Mapped[int] = mapped_column(Integer, default=0)

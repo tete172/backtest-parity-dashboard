@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
@@ -20,7 +21,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./fxbot_dashboard.db"
 
     # --- キャッシュ(ElastiCache/Redis 相当。未設定ならプロセス内メモリ)---
-    redis_url: str | None = None
+    redis_url: Optional[str] = None
     cache_ttl_seconds: int = 60
 
     # --- AWS / CloudWatch(既定はプレースホルダ。実環境の値は .env で渡す)---
